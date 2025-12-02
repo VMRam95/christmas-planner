@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       // Get surprise gifts for a recipient (excluding those given by the recipient themselves)
       // This is used when viewing someone else's page to see what others are giving them
       const { data, error } = await supabase
-        .from('christmas_surprise_gifts')
+        .from('surprise_gifts')
         .select('*')
         .eq('recipient_id', recipientId)
         .neq('recipient_id', session.user.id) // Don't show surprise gifts TO the current user
@@ -41,9 +41,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data })
     } else {
       // Get surprise gifts given by current user
-      const { data, error } = await supabase
-        .from('christmas_surprise_gifts')
-        .select('*, recipient:christmas_users(id, name)')
+      const { data: gifts, error } = await supabase
+        .from('surprise_gifts')
+        .select('*')
         .eq('giver_id', session.user.id)
         .order('created_at', { ascending: false })
 
@@ -54,6 +54,30 @@ export async function GET(request: NextRequest) {
           { status: 500 }
         )
       }
+
+      // Get recipients for those gifts
+      const recipientIds = [...new Set(gifts?.map(g => g.recipient_id) || [])]
+      let recipientsMap: Record<string, { id: string; name: string }> = {}
+
+      if (recipientIds.length > 0) {
+        const { data: recipients } = await supabase
+          .from('users')
+          .select('id, name')
+          .in('id', recipientIds)
+
+        if (recipients) {
+          recipientsMap = recipients.reduce((acc: Record<string, { id: string; name: string }>, user) => {
+            acc[user.id] = user
+            return acc
+          }, {})
+        }
+      }
+
+      // Combine gifts with recipients
+      const data = gifts?.map(gift => ({
+        ...gift,
+        recipient: recipientsMap[gift.recipient_id] || null
+      })) || []
 
       return NextResponse.json({ success: true, data })
     }
@@ -78,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { recipient_id, description } = body
+    const { recipient_id, title, description, url } = body
 
     if (!recipient_id) {
       return NextResponse.json(
@@ -87,9 +111,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!description || typeof description !== 'string' || description.trim().length === 0) {
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
       return NextResponse.json(
-        { success: false, error: 'La descripción es requerida' },
+        { success: false, error: 'El título es requerido' },
         { status: 400 }
       )
     }
@@ -105,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Verify recipient exists
     const { data: recipient } = await supabase
-      .from('christmas_users')
+      .from('users')
       .select('id')
       .eq('id', recipient_id)
       .single()
@@ -117,13 +141,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const giftData: {
+      giver_id: string
+      recipient_id: string
+      title: string
+      description?: string
+      url?: string
+    } = {
+      giver_id: session.user.id,
+      recipient_id,
+      title: title.trim(),
+    }
+
+    if (description && typeof description === 'string' && description.trim().length > 0) {
+      giftData.description = description.trim()
+    }
+
+    if (url && typeof url === 'string' && url.trim().length > 0) {
+      giftData.url = url.trim()
+    }
+
     const { data, error } = await supabase
-      .from('christmas_surprise_gifts')
-      .insert({
-        giver_id: session.user.id,
-        recipient_id,
-        description: description.trim(),
-      })
+      .from('surprise_gifts')
+      .insert(giftData)
       .select()
       .single()
 
@@ -170,7 +210,7 @@ export async function DELETE(request: NextRequest) {
 
     // Can only delete own surprise gifts
     const { error } = await supabase
-      .from('christmas_surprise_gifts')
+      .from('surprise_gifts')
       .delete()
       .eq('id', id)
       .eq('giver_id', session.user.id)

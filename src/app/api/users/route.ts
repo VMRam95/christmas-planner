@@ -7,7 +7,7 @@ export async function GET() {
     const supabase = createServerClient()
 
     const { data, error } = await supabase
-      .from('christmas_users')
+      .from('users')
       .select('*')
       .order('name')
 

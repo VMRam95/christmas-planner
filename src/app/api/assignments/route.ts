@@ -17,18 +17,43 @@ export async function GET() {
 
     const supabase = createServerClient()
 
-    const { data, error } = await supabase
-      .from('christmas_assignments')
-      .select('*, christmas_wishes(*)')
+    // First get assignments
+    const { data: assignments, error: assignError } = await supabase
+      .from('assignments')
+      .select('*')
       .eq('assigned_by', session.user.id)
 
-    if (error) {
-      console.error('Error fetching assignments:', error)
+    if (assignError) {
+      console.error('Error fetching assignments:', assignError)
       return NextResponse.json(
         { success: false, error: 'Error al obtener asignaciones' },
         { status: 500 }
       )
     }
+
+    // Then get wishes for those assignments
+    const wishIds = assignments?.map(a => a.wish_id) || []
+    let wishesMap: Record<string, unknown> = {}
+
+    if (wishIds.length > 0) {
+      const { data: wishes } = await supabase
+        .from('wishes')
+        .select('*')
+        .in('id', wishIds)
+
+      if (wishes) {
+        wishesMap = wishes.reduce((acc: Record<string, unknown>, wish) => {
+          acc[wish.id] = wish
+          return acc
+        }, {})
+      }
+    }
+
+    // Combine assignments with wishes
+    const data = assignments?.map(assignment => ({
+      ...assignment,
+      wish: wishesMap[assignment.wish_id] || null
+    })) || []
 
     return NextResponse.json({ success: true, data })
   } catch (error) {
@@ -65,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     // Check if wish exists and is not owned by current user
     const { data: wish } = await supabase
-      .from('christmas_wishes')
+      .from('wishes')
       .select('user_id')
       .eq('id', wish_id)
       .single()
@@ -86,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     // Check if already assigned
     const { data: existing } = await supabase
-      .from('christmas_assignments')
+      .from('assignments')
       .select('id')
       .eq('wish_id', wish_id)
       .single()
@@ -100,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     // Create assignment
     const { data, error } = await supabase
-      .from('christmas_assignments')
+      .from('assignments')
       .insert({
         wish_id,
         assigned_by: session.user.id,
@@ -151,7 +176,7 @@ export async function DELETE(request: NextRequest) {
 
     // Can only delete own assignments
     const { error } = await supabase
-      .from('christmas_assignments')
+      .from('assignments')
       .delete()
       .eq('wish_id', wish_id)
       .eq('assigned_by', session.user.id)

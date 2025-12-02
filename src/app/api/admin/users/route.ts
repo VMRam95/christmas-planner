@@ -26,7 +26,7 @@ export async function GET() {
 
     const supabase = createServerClient()
     const { data, error } = await supabase
-      .from('christmas_users')
+      .from('users')
       .select('*')
       .order('name')
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists
     const { data: existing } = await supabase
-      .from('christmas_users')
+      .from('users')
       .select('id')
       .eq('email', email)
       .single()
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     // Insert new user
     const { data, error } = await supabase
-      .from('christmas_users')
+      .from('users')
       .insert([{ email, name }])
       .select()
       .single()
@@ -109,6 +109,85 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error in admin users POST:', error)
+    return NextResponse.json(
+      { success: false, error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT - Update family member (admin only)
+export async function PUT(request: NextRequest) {
+  try {
+    // Verify admin access
+    if (!(await isAdmin())) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado' },
+        { status: 403 }
+      )
+    }
+
+    const supabase = createServerClient()
+    const body = await request.json()
+    const { id, email, name, avatar_url } = body
+
+    // Validate input
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID de usuario requerido' },
+        { status: 400 }
+      )
+    }
+
+    if (!email || !name) {
+      return NextResponse.json(
+        { success: false, error: 'Email y nombre son requeridos' },
+        { status: 400 }
+      )
+    }
+
+    // Check if email is already taken by another user
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .neq('id', id)
+      .single()
+
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'El email ya está en uso' },
+        { status: 400 }
+      )
+    }
+
+    // Update user
+    const updateData: Record<string, any> = { email, name }
+    if (avatar_url !== undefined) {
+      updateData.avatar_url = avatar_url
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating user:', error)
+      return NextResponse.json(
+        { success: false, error: 'Error al actualizar usuario' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data,
+    })
+  } catch (error) {
+    console.error('Error in admin users PUT:', error)
     return NextResponse.json(
       { success: false, error: 'Error interno del servidor' },
       { status: 500 }
@@ -140,7 +219,7 @@ export async function DELETE(request: NextRequest) {
 
     // Delete user
     const { error } = await supabase
-      .from('christmas_users')
+      .from('users')
       .delete()
       .eq('id', id)
 

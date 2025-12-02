@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const supabase = createServerClient()
 
     const { data, error } = await supabase
-      .from('christmas_wishes')
+      .from('wishes')
       .select('*')
       .eq('user_id', userId)
       .order('priority', { ascending: false })
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
 
     const { data, error } = await supabase
-      .from('christmas_wishes')
+      .from('wishes')
       .insert({
         user_id: session.user.id,
         title: title.trim(),
@@ -123,7 +123,7 @@ export async function PUT(request: NextRequest) {
 
     // Verify ownership
     const { data: existing } = await supabase
-      .from('christmas_wishes')
+      .from('wishes')
       .select('user_id')
       .eq('id', id)
       .single()
@@ -142,7 +142,7 @@ export async function PUT(request: NextRequest) {
     if (priority !== undefined) updates.priority = priority
 
     const { data, error } = await supabase
-      .from('christmas_wishes')
+      .from('wishes')
       .update(updates)
       .eq('id', id)
       .select()
@@ -191,7 +191,7 @@ export async function DELETE(request: NextRequest) {
 
     // Verify ownership
     const { data: existing } = await supabase
-      .from('christmas_wishes')
+      .from('wishes')
       .select('user_id')
       .eq('id', id)
       .single()
@@ -203,7 +203,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const { error } = await supabase.from('christmas_wishes').delete().eq('id', id)
+    const { error } = await supabase.from('wishes').delete().eq('id', id)
 
     if (error) {
       console.error('Error deleting wish:', error)

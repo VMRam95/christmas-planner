@@ -18,11 +18,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const wishIdsParam = searchParams.get('wish_ids')
 
-    if (!wishIdsParam) {
-      return NextResponse.json(
-        { success: false, error: 'wish_ids es requerido' },
-        { status: 400 }
-      )
+    // Handle missing or empty wish_ids - return empty array
+    if (!wishIdsParam || wishIdsParam.trim() === '') {
+      return NextResponse.json({ success: true, data: [] })
     }
 
     // Parse comma-separated wish IDs
@@ -36,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     // Query assignments for the provided wish IDs
     const { data, error } = await supabase
-      .from('christmas_assignments')
+      .from('assignments')
       .select('wish_id')
       .in('wish_id', wishIds)
 
