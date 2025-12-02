@@ -12,10 +12,12 @@ const supabaseKey =
  * Supabase client for server-side operations
  * Use this in API routes and Server Components
  *
- * Uses the christmas_planner schema
+ * Uses the christmas_planner schema to isolate from other projects
  *
  * Note: If service role key is configured, this bypasses RLS
  */
 export function createServerClient() {
-  return createClient(supabaseUrl, supabaseKey)
+  return createClient(supabaseUrl, supabaseKey, {
+    db: { schema: 'christmas_planner' }
+  })
 }
