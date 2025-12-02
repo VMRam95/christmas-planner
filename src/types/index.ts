@@ -29,7 +29,9 @@ export type SurpriseGift = {
   id: string
   giver_id: string
   recipient_id: string
-  description: string
+  title: string
+  description: string | null
+  url: string | null
   created_at: string
 }
 
@@ -42,7 +44,7 @@ export type WishWithAssignment = Wish & {
 }
 
 export type AssignmentWithWish = Assignment & {
-  christmas_wishes: Wish & {
+  wishes: Wish & {
     user_id: string
   }
 }

@@ -51,7 +51,7 @@ export async function validateAndCreateSession(email: string): Promise<{
 
   // Check if user exists in database
   const { data: user, error } = await supabase
-    .from('christmas_users')
+    .from('users')
     .select('*')
     .eq('email', email.toLowerCase().trim())
     .single()
