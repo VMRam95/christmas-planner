@@ -185,10 +185,11 @@ export default function DashboardPage() {
 
   const otherMembers = familyMembers.filter((member) => member.id !== user?.id)
 
-  // Show max 3 items initially, can expand to see more
-  const visibleAssignments = showAllAssignments ? assignments : assignments.slice(0, 3)
+  // Filter assignments with valid wishes and show max 3 initially
+  const validAssignments = assignments.filter((a) => a.wishes)
+  const visibleAssignments = showAllAssignments ? validAssignments : validAssignments.slice(0, 3)
   const visibleSurprises = showAllSurprises ? surpriseGifts : surpriseGifts.slice(0, 3)
-  const hasMoreAssignments = assignments.length > 3
+  const hasMoreAssignments = validAssignments.length > 3
   const hasMoreSurprises = surpriseGifts.length > 3
 
   return (

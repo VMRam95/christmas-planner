@@ -52,7 +52,7 @@ export async function GET() {
     // Combine assignments with wishes
     const data = assignments?.map(assignment => ({
       ...assignment,
-      wish: wishesMap[assignment.wish_id] || null
+      wishes: wishesMap[assignment.wish_id] || null
     })) || []
 
     return NextResponse.json({ success: true, data })
