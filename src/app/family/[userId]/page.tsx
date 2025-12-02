@@ -5,11 +5,14 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { Header } from '@/components/layout/Header'
-import { WishCard } from '@/components/wishes/WishCard'
+import { GiftCard } from '@/components/gifts/GiftCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { getInitials, getAvatarColor } from '@/lib/utils'
+import { MemberAvatar } from '@/components/ui/member-avatar'
+import { BackLink } from '@/components/ui/back-link'
+import { SectionCard } from '@/components/ui/section-card'
+import { CreateSurpriseGiftModal } from '@/components/ui/create-surprise-gift-modal'
+import { useToast } from '@/components/ui/toast'
 
 import type { User, WishWithAssignment, SurpriseGift } from '@/types'
 
@@ -18,6 +21,7 @@ export default function FamilyMemberPage() {
   const params = useParams()
   const userId = params.userId as string
   const { user: currentUser, isLoading: authLoading, isAuthenticated } = useAuth()
+  const { showToast } = useToast()
 
   const [member, setMember] = useState<User | null>(null)
   const [wishes, setWishes] = useState<WishWithAssignment[]>([])
@@ -25,9 +29,8 @@ export default function FamilyMemberPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
 
-  // Surprise gift form
-  const [showSurpriseForm, setShowSurpriseForm] = useState(false)
-  const [surpriseDescription, setSurpriseDescription] = useState('')
+  // Modal states
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -67,21 +70,18 @@ export default function FamilyMemberPage() {
 
         // Combine wishes with assignment info
         const wishesWithAssignments: WishWithAssignment[] = wishesData.data.map((wish: WishWithAssignment) => {
-          // Check if this wish is assigned by anyone (we need another query for this)
-          // For now, we'll check our own assignments
           const myAssignment = assignmentsData.success
             ? assignmentsData.data.find((a: { wish_id: string }) => a.wish_id === wish.id)
             : null
 
           return {
             ...wish,
-            is_assigned: !!myAssignment, // This will be updated with full assignment check
+            is_assigned: !!myAssignment,
             assigned_by_me: !!myAssignment,
           }
         })
 
-        // We need to check all assignments for these wishes
-        // Let's fetch all assignments for these wish IDs
+        // Check all assignments for these wishes
         const wishIds = wishesData.data.map((w: { id: string }) => w.id)
         const allAssignmentsCheck = await checkAllAssignments(wishIds)
 
@@ -94,7 +94,7 @@ export default function FamilyMemberPage() {
         setWishes(finalWishes)
       }
 
-      // Fetch surprise gifts for this recipient
+      // Fetch surprise gifts for this recipient (from other givers)
       const surpriseResponse = await fetch(`/api/surprise-gifts?recipient_id=${userId}`)
       const surpriseData = await surpriseResponse.json()
       if (surpriseData.success) {
@@ -109,8 +109,6 @@ export default function FamilyMemberPage() {
 
   // Helper to check all assignments
   async function checkAllAssignments(wishIds: string[]): Promise<string[]> {
-    // This is a workaround - ideally we'd have a dedicated endpoint
-    // For now, we make individual checks via the wishes endpoint with assignments
     try {
       const response = await fetch(`/api/wishes/assignments?wish_ids=${wishIds.join(',')}`)
       if (response.ok) {
@@ -120,7 +118,7 @@ export default function FamilyMemberPage() {
         }
       }
     } catch {
-      // Fallback - return empty (no extra assignment info)
+      // Fallback - return empty
     }
     return []
   }
@@ -147,9 +145,12 @@ export default function FamilyMemberPage() {
             w.id === wish.id ? { ...w, is_assigned: true, assigned_by_me: true } : w
           )
         )
+        showToast('Regalo asignado correctamente', 'success')
       } else {
-        alert(result.error || 'Error al asignar regalo')
+        showToast(result.error || 'Error al asignar regalo', 'error')
       }
+    } catch {
+      showToast('Error al asignar regalo', 'error')
     } finally {
       setActionLoading(false)
     }
@@ -169,53 +170,29 @@ export default function FamilyMemberPage() {
             w.id === wish.id ? { ...w, is_assigned: false, assigned_by_me: false } : w
           )
         )
+        showToast('Asignación eliminada', 'success')
+      } else {
+        showToast(result.error || 'Error al quitar asignación', 'error')
       }
+    } catch {
+      showToast('Error al quitar asignación', 'error')
     } finally {
       setActionLoading(false)
     }
   }
 
-  // Create surprise gift
-  const handleCreateSurprise = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!surpriseDescription.trim()) return
-
-    setActionLoading(true)
+  // Handle gift creation success
+  const handleGiftCreated = async () => {
+    showToast('Regalo sorpresa creado correctamente', 'success')
+    // Refresh surprise gifts list
     try {
-      const response = await fetch('/api/surprise-gifts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipient_id: userId,
-          description: surpriseDescription,
-        }),
-      })
-      const result = await response.json()
-      if (result.success) {
-        setSurpriseGifts((prev) => [result.data, ...prev])
-        setSurpriseDescription('')
-        setShowSurpriseForm(false)
+      const surpriseResponse = await fetch(`/api/surprise-gifts?recipient_id=${userId}`)
+      const surpriseData = await surpriseResponse.json()
+      if (surpriseData.success) {
+        setSurpriseGifts(surpriseData.data)
       }
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  // Delete surprise gift
-  const handleDeleteSurprise = async (gift: SurpriseGift) => {
-    if (!confirm('¿Eliminar este regalo sorpresa?')) return
-
-    setActionLoading(true)
-    try {
-      const response = await fetch(`/api/surprise-gifts?id=${gift.id}`, {
-        method: 'DELETE',
-      })
-      const result = await response.json()
-      if (result.success) {
-        setSurpriseGifts((prev) => prev.filter((g) => g.id !== gift.id))
-      }
-    } finally {
-      setActionLoading(false)
+    } catch {
+      // Ignore refresh errors
     }
   }
 
@@ -250,13 +227,11 @@ export default function FamilyMemberPage() {
       <Header />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-6" />
+
         {/* Member header */}
         <div className="flex items-center gap-4 mb-8">
-          <div
-            className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-semibold ${getAvatarColor(member.name)}`}
-          >
-            {getInitials(member.name)}
-          </div>
+          <MemberAvatar name={member.name} avatarUrl={member.avatar_url} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">
               Carta de {member.name}
@@ -284,9 +259,10 @@ export default function FamilyMemberPage() {
             ) : (
               <div className="space-y-3">
                 {wishes.map((wish) => (
-                  <WishCard
+                  <GiftCard
                     key={wish.id}
-                    wish={wish}
+                    gift={wish}
+                    type="wish"
                     showAssignment
                     onAssign={handleAssign}
                     onUnassign={handleUnassign}
@@ -298,101 +274,62 @@ export default function FamilyMemberPage() {
           </CardContent>
         </Card>
 
-        {/* Surprise gifts section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
+        {/* Surprise gifts from others */}
+        {surpriseGifts.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <span>🎉</span>
-                <span>Regalos sorpresa</span>
-              </span>
-              {!showSurpriseForm && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowSurpriseForm(true)}
-                >
-                  + Añadir
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Surprise form */}
-            {showSurpriseForm && (
-              <form onSubmit={handleCreateSurprise} className="mb-4 p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-muted mb-3">
-                  ¿Vas a regalar algo que {member.name} no ha pedido? Anótalo aquí para que otros no lo repitan.
-                </p>
-                <Input
-                  placeholder="Descripción del regalo sorpresa"
-                  value={surpriseDescription}
-                  onChange={(e) => setSurpriseDescription(e.target.value)}
-                  className="mb-3"
-                />
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" isLoading={actionLoading}>
-                    Añadir
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowSurpriseForm(false)
-                      setSurpriseDescription('')
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {/* Surprise gifts list */}
-            {surpriseGifts.length === 0 && !showSurpriseForm ? (
-              <p className="text-sm text-muted text-center py-4">
-                No hay regalos sorpresa registrados para {member.name}
+                <span>Regalos sorpresa para {member.name} ({surpriseGifts.length})</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted mb-4">
+                Otros familiares ya han comprometido estos regalos. Evita comprar lo mismo.
               </p>
-            ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {surpriseGifts.map((gift) => (
-                  <div
+                  <GiftCard
                     key={gift.id}
-                    className="flex items-center justify-between p-3 bg-christmas-gold/10 rounded-lg"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>🎁</span>
-                      <span className="text-sm">{gift.description}</span>
-                      {gift.giver_id === currentUser?.id && (
-                        <span className="text-xs text-muted">(tuyo)</span>
-                      )}
-                    </div>
-                    {gift.giver_id === currentUser?.id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteSurprise(gift)}
-                        disabled={actionLoading}
-                        className="px-2 text-red-500 hover:text-red-700"
-                      >
-                        🗑️
-                      </Button>
-                    )}
-                  </div>
+                    gift={gift}
+                    type="surprise"
+                    showPriority={false}
+                  />
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Back link */}
-        <div className="mt-6 text-center">
-          <Link href="/dashboard" className="text-sm text-muted hover:text-christmas-green">
-            ← Volver a la familia
-          </Link>
+        {/* Create surprise gift action */}
+        <div
+          onClick={() => setShowCreateModal(true)}
+          className="cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && setShowCreateModal(true)}
+        >
+          <SectionCard
+            icon="🎁"
+            title="Crear Regalo"
+            description={`Crea un regalo sorpresa para ${member.name}`}
+            action={
+              <Button variant="primary" size="sm">
+                Crear
+              </Button>
+            }
+          />
         </div>
       </main>
+
+      {/* Create surprise gift modal */}
+      <CreateSurpriseGiftModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleGiftCreated}
+        recipientId={userId}
+        recipientName={member.name}
+      />
     </div>
   )
 }

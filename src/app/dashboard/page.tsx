@@ -8,11 +8,14 @@ import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { SectionCard } from '@/components/ui/section-card'
+import { MemberAvatar } from '@/components/ui/member-avatar'
+import { EmptyState } from '@/components/ui/empty-state'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { CreateGiftModal } from '@/components/ui/create-gift-modal'
 import { useToast } from '@/components/ui/toast'
-import { getInitials, getAvatarColor } from '@/lib/utils'
 
-import type { User, AssignmentWithWish, SurpriseGiftWithRecipient, PRIORITY_LABELS } from '@/types'
+import type { User, AssignmentWithWish, SurpriseGiftWithRecipient } from '@/types'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -24,11 +27,14 @@ export default function DashboardPage() {
   const [surpriseGifts, setSurpriseGifts] = useState<SurpriseGiftWithRecipient[]>([])
   const [loadingAssignments, setLoadingAssignments] = useState(true)
   const [unassigningWishId, setUnassigningWishId] = useState<string | null>(null)
+  const [showAllAssignments, setShowAllAssignments] = useState(false)
+  const [showAllSurprises, setShowAllSurprises] = useState(false)
   const [unassignModal, setUnassignModal] = useState<{ isOpen: boolean; wishId: string | null; wishTitle: string }>({
     isOpen: false,
     wishId: null,
     wishTitle: '',
   })
+  const [createGiftModal, setCreateGiftModal] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -134,6 +140,21 @@ export default function DashboardPage() {
     return recipient?.name || 'Desconocido'
   }
 
+  // Handle gift creation success
+  const handleGiftCreated = async () => {
+    showToast('Regalo creado correctamente', 'success')
+    // Refetch surprise gifts
+    try {
+      const response = await fetch('/api/surprise-gifts')
+      const data = await response.json()
+      if (data.success) {
+        setSurpriseGifts(data.data)
+      }
+    } catch (error) {
+      console.error('Error refetching surprise gifts:', error)
+    }
+  }
+
   // Priority labels
   const priorityLabels: Record<1 | 2 | 3, string> = {
     1: 'Baja',
@@ -164,115 +185,135 @@ export default function DashboardPage() {
 
   const otherMembers = familyMembers.filter((member) => member.id !== user?.id)
 
+  // Show max 3 items initially, can expand to see more
+  const visibleAssignments = showAllAssignments ? assignments : assignments.slice(0, 3)
+  const visibleSurprises = showAllSurprises ? surpriseGifts : surpriseGifts.slice(0, 3)
+  const hasMoreAssignments = assignments.length > 3
+  const hasMoreSurprises = surpriseGifts.length > 3
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {/* Welcome section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        {/* Welcome section - More compact */}
+        <div className="mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             ¡Hola, {user?.name}! 👋
           </h1>
-          <p className="text-muted mt-1">
+          <p className="text-sm text-muted mt-0.5">
             Bienvenido al organizador de regalos navideños
           </p>
         </div>
 
-        {/* Quick actions */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-8">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <span className="text-4xl">📝</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Mi Carta a los Reyes</h3>
-                  <p className="text-sm text-muted">
-                    Añade lo que te gustaría recibir
-                  </p>
-                </div>
-                <Link href="/my-wishes">
-                  <Button variant="secondary" size="sm">
-                    Ver mi carta
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
+        {/* Quick actions - More compact with SectionCard */}
+        <div className="mb-6 grid sm:grid-cols-2 gap-4">
+          <Link href="/my-wishes">
+            <SectionCard
+              icon="📝"
+              title="Mi Carta a los Reyes"
+              description="Añade lo que te gustaría recibir"
+              action={
+                <Button variant="secondary" size="sm">
+                  Ver carta
+                </Button>
+              }
+            />
+          </Link>
+          <div
+            onClick={() => setCreateGiftModal(true)}
+            className="text-left cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setCreateGiftModal(true)}
+          >
+            <SectionCard
+              icon="🎁"
+              title="Crear Regalo"
+              description="Crea un regalo para alguien especial"
+              action={
+                <Button variant="primary" size="sm">
+                  Crear
+                </Button>
+              }
+            />
+          </div>
         </div>
 
-        {/* My assigned gifts section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        {/* My assigned gifts section - More compact with collapsible lists */}
+        <Card className="mb-6">
+          <CardHeader className="py-3">
+            <CardTitle className="flex items-center gap-2 text-base">
               <span>🎁</span>
               <span>Mis regalos asignados</span>
+              {(assignments.length > 0 || surpriseGifts.length > 0) && (
+                <Badge variant="success" className="ml-auto">
+                  {assignments.length + surpriseGifts.length}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="py-3">
             {loadingAssignments ? (
-              <div className="py-8 text-center text-muted">
-                Cargando regalos asignados...
-              </div>
+              <EmptyState icon="⏳" message="Cargando regalos asignados..." />
             ) : assignments.length === 0 && surpriseGifts.length === 0 ? (
-              <div className="py-8 text-center">
-                <span className="text-4xl block mb-2">🎄</span>
-                <p className="text-muted">
-                  Aún no tienes regalos asignados. Visita las listas de deseos de tu familia
-                  para asignarte regalos.
-                </p>
-              </div>
+              <EmptyState
+                icon="🎄"
+                message="Aún no tienes regalos asignados. Visita las listas de deseos de tu familia para asignarte regalos."
+              />
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Assigned wishes */}
                 {assignments.length > 0 && (
                   <div>
-                    <h3 className="font-medium mb-3 text-sm text-muted">
+                    <h3 className="font-medium mb-2 text-xs text-muted uppercase tracking-wide">
                       Deseos asignados ({assignments.length})
                     </h3>
-                    <div className="space-y-3">
-                      {assignments.map((assignment) => (
+                    <div className="space-y-2">
+                      {visibleAssignments.map((assignment) => (
                         <div
                           key={assignment.id}
-                          className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-christmas-green/50 hover:bg-christmas-green/5 transition-colors"
+                          className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-christmas-green/50 hover:bg-christmas-green/5 transition-colors"
                         >
-                          <span className="text-2xl">📝</span>
+                          <span className="text-xl shrink-0">📝</span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start gap-2 mb-1">
-                              <h4 className="font-medium text-foreground">
-                                {assignment.christmas_wishes.title}
+                              <h4 className="font-medium text-sm text-foreground">
+                                {assignment.wishes.title}
                               </h4>
-                              <Badge variant={priorityColors[assignment.christmas_wishes.priority]}>
-                                {priorityLabels[assignment.christmas_wishes.priority]}
+                              <Badge variant={priorityColors[assignment.wishes.priority]} className="shrink-0">
+                                {priorityLabels[assignment.wishes.priority]}
                               </Badge>
                             </div>
-                            {assignment.christmas_wishes.description && (
-                              <p className="text-sm text-muted mb-2 line-clamp-2">
-                                {assignment.christmas_wishes.description}
+                            {assignment.wishes.description && (
+                              <p className="text-xs text-muted mb-1.5 line-clamp-2">
+                                {assignment.wishes.description}
                               </p>
                             )}
-                            <p className="text-sm text-muted">
-                              Para: <span className="font-medium text-foreground">
-                                {getRecipientName(assignment.christmas_wishes.user_id)}
-                              </span>
-                            </p>
-                            {assignment.christmas_wishes.url && (
-                              <a
-                                href={assignment.christmas_wishes.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-christmas-green hover:text-christmas-green-dark mt-1 inline-flex items-center gap-1"
-                              >
-                                Ver enlace ↗
-                              </a>
-                            )}
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <p className="text-xs text-muted">
+                                Para: <span className="font-medium text-foreground">
+                                  {getRecipientName(assignment.wishes.user_id)}
+                                </span>
+                              </p>
+                              {assignment.wishes.url && (
+                                <a
+                                  href={assignment.wishes.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-christmas-green hover:text-christmas-green-dark inline-flex items-center gap-1"
+                                >
+                                  Ver enlace ↗
+                                </a>
+                              )}
+                            </div>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openUnassignModal(assignment.wish_id, assignment.christmas_wishes.title)}
+                            onClick={() => openUnassignModal(assignment.wish_id, assignment.wishes.title)}
                             disabled={unassigningWishId === assignment.wish_id}
+                            className="shrink-0"
                           >
                             {unassigningWishId === assignment.wish_id
                               ? 'Quitando...'
@@ -281,35 +322,72 @@ export default function DashboardPage() {
                         </div>
                       ))}
                     </div>
+                    {hasMoreAssignments && (
+                      <button
+                        onClick={() => setShowAllAssignments(!showAllAssignments)}
+                        className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium mt-2 w-full text-center py-2 hover:bg-christmas-green/5 rounded transition-colors"
+                      >
+                        {showAllAssignments
+                          ? 'Ver menos'
+                          : `Ver ${assignments.length - 3} más`}
+                      </button>
+                    )}
                   </div>
                 )}
 
                 {/* Surprise gifts */}
                 {surpriseGifts.length > 0 && (
                   <div>
-                    <h3 className="font-medium mb-3 text-sm text-muted">
+                    <h3 className="font-medium mb-2 text-xs text-muted uppercase tracking-wide">
                       Regalos sorpresa ({surpriseGifts.length})
                     </h3>
-                    <div className="space-y-3">
-                      {surpriseGifts.map((gift) => (
+                    <div className="space-y-2">
+                      {visibleSurprises.map((gift) => (
                         <div
                           key={gift.id}
-                          className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-christmas-gold/50 hover:bg-christmas-gold/5 transition-colors"
+                          className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-christmas-gold/50 hover:bg-christmas-gold/5 transition-colors"
                         >
-                          <span className="text-2xl">🎉</span>
+                          <span className="text-xl shrink-0">🎉</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-foreground mb-2">
-                              {gift.description}
-                            </p>
-                            <p className="text-sm text-muted">
-                              Para: <span className="font-medium text-foreground">
-                                {gift.recipient.name}
-                              </span>
-                            </p>
+                            <h4 className="font-medium text-sm text-foreground mb-1">
+                              {gift.title}
+                            </h4>
+                            {gift.description && (
+                              <p className="text-xs text-muted mb-1.5 line-clamp-2">
+                                {gift.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <p className="text-xs text-muted">
+                                Para: <span className="font-medium text-foreground">
+                                  {gift.recipient.name}
+                                </span>
+                              </p>
+                              {gift.url && (
+                                <a
+                                  href={gift.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-christmas-green hover:text-christmas-green-dark inline-flex items-center gap-1"
+                                >
+                                  Ver enlace ↗
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
+                    {hasMoreSurprises && (
+                      <button
+                        onClick={() => setShowAllSurprises(!showAllSurprises)}
+                        className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium mt-2 w-full text-center py-2 hover:bg-christmas-green/5 rounded transition-colors"
+                      >
+                        {showAllSurprises
+                          ? 'Ver menos'
+                          : `Ver ${surpriseGifts.length - 3} más`}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -317,40 +395,40 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Family members */}
+        {/* Family members - Horizontal scroll on mobile, grid on desktop */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="py-3">
+            <CardTitle className="flex items-center gap-2 text-base">
               <span>👨‍👩‍👧‍👦</span>
               <span>Familia</span>
+              {otherMembers.length > 0 && (
+                <Badge variant="info" className="ml-auto">
+                  {otherMembers.length}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="py-3">
             {loadingMembers ? (
-              <div className="py-8 text-center text-muted">
-                Cargando miembros de la familia...
-              </div>
+              <EmptyState icon="⏳" message="Cargando miembros de la familia..." />
             ) : otherMembers.length === 0 ? (
-              <div className="py-8 text-center text-muted">
-                No hay otros miembros de la familia registrados
-              </div>
+              <EmptyState
+                icon="👥"
+                message="No hay otros miembros de la familia registrados"
+              />
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {otherMembers.map((member) => (
                   <Link
                     key={member.id}
                     href={`/family/${member.id}`}
                     className="block"
                   >
-                    <div className="flex items-center gap-3 p-4 rounded-lg border border-border hover:border-christmas-green hover:bg-christmas-green/5 transition-colors">
-                      <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(member.name)}`}
-                      >
-                        {getInitials(member.name)}
-                      </div>
-                      <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-muted">Ver lista de deseos</p>
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-christmas-green hover:bg-christmas-green/5 transition-colors">
+                      <MemberAvatar name={member.name} avatarUrl={member.avatar_url} size="sm" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{member.name}</p>
+                        <p className="text-xs text-muted">Ver lista de deseos</p>
                       </div>
                     </div>
                   </Link>
@@ -372,6 +450,15 @@ export default function DashboardPage() {
         cancelText="Cancelar"
         variant="danger"
         loading={unassigningWishId !== null}
+      />
+
+      {/* Create gift modal */}
+      <CreateGiftModal
+        isOpen={createGiftModal}
+        onClose={() => setCreateGiftModal(false)}
+        onSuccess={handleGiftCreated}
+        familyMembers={familyMembers}
+        currentUserId={user?.id || ''}
       />
     </div>
   )

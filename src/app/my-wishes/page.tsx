@@ -4,11 +4,11 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Header } from '@/components/layout/Header'
-import { WishForm } from '@/components/wishes/WishForm'
-import { WishCard } from '@/components/wishes/WishCard'
+import { GiftForm, GiftCard } from '@/components/gifts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BackLink } from '@/components/ui/back-link'
 
-import type { Wish } from '@/types'
+import type { Wish, SurpriseGift } from '@/types'
 
 export default function MyWishesPage() {
   const router = useRouter()
@@ -47,13 +47,13 @@ export default function MyWishesPage() {
   }, [isAuthenticated, fetchWishes])
 
   // Create wish
-  const handleCreate = async (data: { title: string; description: string; url: string; priority: number }) => {
+  const handleCreate = async (data: { title: string; description: string; url: string; priority?: number }) => {
     setActionLoading(true)
     try {
       const response = await fetch('/api/wishes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, priority: data.priority ?? 2 }),
       })
       const result = await response.json()
       if (result.success) {
@@ -65,14 +65,14 @@ export default function MyWishesPage() {
   }
 
   // Update wish
-  const handleUpdate = async (data: { title: string; description: string; url: string; priority: number }) => {
+  const handleUpdate = async (data: { title: string; description: string; url: string; priority?: number }) => {
     if (!editingWish) return
     setActionLoading(true)
     try {
       const response = await fetch('/api/wishes', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editingWish.id, ...data }),
+        body: JSON.stringify({ id: editingWish.id, ...data, priority: data.priority ?? editingWish.priority }),
       })
       const result = await response.json()
       if (result.success) {
@@ -103,6 +103,15 @@ export default function MyWishesPage() {
     }
   }
 
+  // Wrappers for GiftCard's wider type callbacks
+  const handleEditWrapper = (gift: Wish | SurpriseGift) => {
+    setEditingWish(gift as Wish)
+  }
+
+  const handleDeleteWrapper = (gift: Wish | SurpriseGift) => {
+    handleDelete(gift as Wish)
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -123,6 +132,8 @@ export default function MyWishesPage() {
       <Header />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-6" />
+
         {/* Page header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -136,14 +147,20 @@ export default function MyWishesPage() {
         {/* Form section */}
         <div className="mb-8">
           {editingWish ? (
-            <WishForm
-              wish={editingWish}
+            <GiftForm
+              mode="wish"
+              initialData={{
+                title: editingWish.title,
+                description: editingWish.description || '',
+                url: editingWish.url || '',
+                priority: editingWish.priority,
+              }}
               onSubmit={handleUpdate}
               onCancel={() => setEditingWish(null)}
               isLoading={actionLoading}
             />
           ) : (
-            <WishForm onSubmit={handleCreate} isLoading={actionLoading} />
+            <GiftForm mode="wish" onSubmit={handleCreate} isLoading={actionLoading} />
           )}
         </div>
 
@@ -170,12 +187,13 @@ export default function MyWishesPage() {
             ) : (
               <div className="space-y-3">
                 {wishes.map((wish) => (
-                  <WishCard
+                  <GiftCard
                     key={wish.id}
-                    wish={wish}
+                    gift={wish}
+                    type="wish"
                     isOwner
-                    onEdit={setEditingWish}
-                    onDelete={handleDelete}
+                    onEdit={handleEditWrapper}
+                    onDelete={handleDeleteWrapper}
                     isLoading={actionLoading}
                   />
                 ))}
