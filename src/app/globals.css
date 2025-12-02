@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+:root {
+  /* Christmas Theme Colors */
+  --christmas-red: #c41e3a;
+  --christmas-red-dark: #9a1830;
+  --christmas-green: #228b22;
+  --christmas-green-dark: #0f5132;
+  --christmas-gold: #ffd700;
+  --christmas-gold-dark: #daa520;
+  --christmas-snow: #fffafa;
+  --christmas-cream: #faf8f5;
+
+  /* Base colors */
+  --background: var(--christmas-cream);
+  --foreground: #1a1a1a;
+  --card-background: #ffffff;
+  --border: #e5e5e5;
+  --muted: #6b7280;
+}
+
+@theme inline {
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-background);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+
+  /* Christmas colors */
+  --color-christmas-red: var(--christmas-red);
+  --color-christmas-red-dark: var(--christmas-red-dark);
+  --color-christmas-green: var(--christmas-green);
+  --color-christmas-green-dark: var(--christmas-green-dark);
+  --color-christmas-gold: var(--christmas-gold);
+  --color-christmas-gold-dark: var(--christmas-gold-dark);
+  --color-christmas-snow: var(--christmas-snow);
+  --color-christmas-cream: var(--christmas-cream);
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+/* Base styles */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--christmas-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--christmas-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--christmas-green-dark);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--christmas-gold);
+  color: var(--foreground);
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--christmas-green);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Utility classes for Christmas theme */
+.christmas-gradient {
+  background: linear-gradient(135deg, var(--christmas-red) 0%, var(--christmas-green) 100%);
+}
+
+.christmas-border {
+  border: 2px solid var(--christmas-gold);
+}
+
+.text-christmas-red {
+  color: var(--christmas-red);
+}
+
+.text-christmas-green {
+  color: var(--christmas-green);
+}
+
+.text-christmas-gold {
+  color: var(--christmas-gold);
+}
+
+.bg-christmas-red {
+  background-color: var(--christmas-red);
+}
+
+.bg-christmas-green {
+  background-color: var(--christmas-green);
+}
+
+.bg-christmas-gold {
+  background-color: var(--christmas-gold);
+}
+
+.bg-christmas-snow {
+  background-color: var(--christmas-snow);
+}
+
+/* Toast and Modal animations */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
