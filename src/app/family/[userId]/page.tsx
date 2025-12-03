@@ -94,11 +94,15 @@ export default function FamilyMemberPage() {
         const wishIds = wishesData.data.map((w: { id: string }) => w.id)
         const allAssignmentsCheck = await checkAllAssignments(wishIds)
 
-        // Update with full assignment info
-        const finalWishes = wishesWithAssignments.map((wish) => ({
-          ...wish,
-          is_assigned: allAssignmentsCheck.includes(wish.id),
-        }))
+        // Update with full assignment info (including external assignment detection)
+        const finalWishes = wishesWithAssignments.map((wish) => {
+          const assignmentInfo = allAssignmentsCheck.find((a) => a.wish_id === wish.id)
+          return {
+            ...wish,
+            is_assigned: !!assignmentInfo,
+            is_external_assignment: assignmentInfo ? assignmentInfo.assigned_by === null : false,
+          }
+        })
 
         setWishes(finalWishes)
       }
@@ -116,14 +120,14 @@ export default function FamilyMemberPage() {
     }
   }, [userId, currentUser])
 
-  // Helper to check all assignments
-  async function checkAllAssignments(wishIds: string[]): Promise<string[]> {
+  // Helper to check all assignments and detect external ones
+  async function checkAllAssignments(wishIds: string[]): Promise<{ wish_id: string; assigned_by: string | null }[]> {
     try {
       const response = await fetch(`/api/wishes/assignments?wish_ids=${wishIds.join(',')}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          return data.data.map((a: { wish_id: string }) => a.wish_id)
+          return data.data
         }
       }
     } catch {
@@ -176,7 +180,7 @@ export default function FamilyMemberPage() {
       if (result.success) {
         setWishes((prev) =>
           prev.map((w) =>
-            w.id === wish.id ? { ...w, is_assigned: false, assigned_by_me: false } : w
+            w.id === wish.id ? { ...w, is_assigned: false, assigned_by_me: false, is_external_assignment: false } : w
           )
         )
         showToast('Asignación eliminada', 'success')
@@ -185,6 +189,33 @@ export default function FamilyMemberPage() {
       }
     } catch {
       showToast('Error al quitar asignación', 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // Assign wish to external person (someone not in the app)
+  const handleAssignExternal = async (wish: WishWithAssignment) => {
+    setActionLoading(true)
+    try {
+      const response = await fetch('/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wish_id: wish.id, external: true }),
+      })
+      const result = await response.json()
+      if (result.success) {
+        setWishes((prev) =>
+          prev.map((w) =>
+            w.id === wish.id ? { ...w, is_assigned: true, assigned_by_me: false, is_external_assignment: true } : w
+          )
+        )
+        showToast('Regalo asignado a otra persona', 'success')
+      } else {
+        showToast(result.error || 'Error al asignar regalo', 'error')
+      }
+    } catch {
+      showToast('Error al asignar regalo', 'error')
     } finally {
       setActionLoading(false)
     }
@@ -324,7 +355,8 @@ export default function FamilyMemberPage() {
                     return showAssigned
                   })
                   .map((wish) => {
-                    const isAssignedByOther = wish.is_assigned && !wish.assigned_by_me
+                    // Disabled only if assigned by another app user (not by me, not external)
+                    const isAssignedByOtherUser = wish.is_assigned && !wish.assigned_by_me && !wish.is_external_assignment
                     return (
                       <GiftCard
                         key={wish.id}
@@ -332,9 +364,10 @@ export default function FamilyMemberPage() {
                         type="wish"
                         showAssignment
                         onAssign={handleAssign}
+                        onAssignExternal={handleAssignExternal}
                         onUnassign={handleUnassign}
                         isLoading={actionLoading}
-                        disabled={isAssignedByOther}
+                        disabled={isAssignedByOtherUser}
                       />
                     )
                   })}

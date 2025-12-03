@@ -16,6 +16,7 @@ type GiftCardProps = {
   onDelete?: (gift: Wish | SurpriseGift) => void
   // Assignment actions (for wishes only)
   onAssign?: (gift: WishWithAssignment) => void
+  onAssignExternal?: (gift: WishWithAssignment) => void
   onUnassign?: (gift: WishWithAssignment) => void
   // Visibility flags
   showAssignment?: boolean
@@ -34,6 +35,7 @@ export function GiftCard({
   onEdit,
   onDelete,
   onAssign,
+  onAssignExternal,
   onUnassign,
   showAssignment = false,
   showPriority = true,
@@ -44,6 +46,7 @@ export function GiftCard({
 }: GiftCardProps) {
   const wishGift = gift as WishWithAssignment
   const hasAssignment = 'is_assigned' in gift
+  const isExternalAssignment = wishGift.is_external_assignment
 
   return (
     <div className={`bg-white rounded-lg border border-border p-4 transition-shadow ${disabled ? 'opacity-60' : 'hover:shadow-sm'}`}>
@@ -70,7 +73,11 @@ export function GiftCard({
             {/* Assignment badge (only for non-owners viewing wishes) */}
             {showAssignment && !isOwner && hasAssignment && wishGift.is_assigned && (
               <Badge variant={wishGift.assigned_by_me ? 'success' : 'warning'}>
-                {wishGift.assigned_by_me ? '🎁 Lo regalo yo' : '✓ Asignado'}
+                {wishGift.assigned_by_me
+                  ? '🎁 Lo regalo yo'
+                  : isExternalAssignment
+                    ? '👥 Asignado a otro'
+                    : '✓ Asignado'}
               </Badge>
             )}
 
@@ -140,15 +147,36 @@ export function GiftCard({
                 >
                   Quitar
                 </Button>
-              ) : !wishGift.is_assigned ? (
+              ) : isExternalAssignment ? (
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="sm"
-                  onClick={() => onAssign?.(wishGift)}
+                  onClick={() => onUnassign?.(wishGift)}
                   disabled={isLoading}
                 >
-                  🎁 Me lo asigno
+                  Quitar
                 </Button>
+              ) : !wishGift.is_assigned ? (
+                <div className="flex flex-col sm:flex-row gap-1">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onAssign?.(wishGift)}
+                    disabled={isLoading}
+                  >
+                    🎁 Me lo pido
+                  </Button>
+                  {onAssignExternal && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAssignExternal(wishGift)}
+                      disabled={isLoading}
+                    >
+                      👥 Asignar a otro
+                    </Button>
+                  )}
+                </div>
               ) : null}
             </>
           )}
