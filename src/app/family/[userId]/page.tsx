@@ -12,6 +12,7 @@ import { MemberAvatar } from '@/components/ui/member-avatar'
 import { BackLink } from '@/components/ui/back-link'
 import { SectionCard } from '@/components/ui/section-card'
 import { CreateSurpriseGiftModal } from '@/components/ui/create-surprise-gift-modal'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { useToast } from '@/components/ui/toast'
 
 import type { User, WishWithAssignment, SurpriseGift } from '@/types'
@@ -31,6 +32,11 @@ export default function FamilyMemberPage() {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [deleteSurpriseModal, setDeleteSurpriseModal] = useState<{
+    isOpen: boolean
+    gift: SurpriseGift | null
+  }>({ isOpen: false, gift: null })
+  const [deletingSurpriseId, setDeletingSurpriseId] = useState<string | null>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -196,6 +202,38 @@ export default function FamilyMemberPage() {
     }
   }
 
+  // Handle surprise gift delete
+  const openDeleteSurpriseModal = (gift: SurpriseGift) => {
+    setDeleteSurpriseModal({ isOpen: true, gift })
+  }
+
+  const closeDeleteSurpriseModal = () => {
+    setDeleteSurpriseModal({ isOpen: false, gift: null })
+  }
+
+  const handleDeleteSurprise = async () => {
+    if (!deleteSurpriseModal.gift) return
+
+    setDeletingSurpriseId(deleteSurpriseModal.gift.id)
+    try {
+      const response = await fetch(`/api/surprise-gifts?id=${deleteSurpriseModal.gift.id}`, {
+        method: 'DELETE',
+      })
+      const result = await response.json()
+      if (result.success) {
+        setSurpriseGifts((prev) => prev.filter((g) => g.id !== deleteSurpriseModal.gift!.id))
+        showToast('Regalo sorpresa eliminado', 'success')
+        closeDeleteSurpriseModal()
+      } else {
+        showToast(result.error || 'Error al eliminar regalo sorpresa', 'error')
+      }
+    } catch {
+      showToast('Error al eliminar regalo sorpresa', 'error')
+    } finally {
+      setDeletingSurpriseId(null)
+    }
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -288,14 +326,21 @@ export default function FamilyMemberPage() {
                 Otros familiares ya han comprometido estos regalos. Evita comprar lo mismo.
               </p>
               <div className="space-y-3">
-                {surpriseGifts.map((gift) => (
-                  <GiftCard
-                    key={gift.id}
-                    gift={gift}
-                    type="surprise"
-                    showPriority={false}
-                  />
-                ))}
+                {surpriseGifts.map((gift) => {
+                  const isMyGift = currentUser ? gift.giver_id === currentUser.id : false
+                  return (
+                    <GiftCard
+                      key={gift.id}
+                      gift={gift}
+                      type="surprise"
+                      showPriority={false}
+                      isOwner={isMyGift}
+                      onDelete={isMyGift ? () => openDeleteSurpriseModal(gift) : undefined}
+                      isLoading={deletingSurpriseId === gift.id}
+                      ownerLabel={isMyGift ? 'tuyo' : undefined}
+                    />
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
@@ -329,6 +374,19 @@ export default function FamilyMemberPage() {
         onSuccess={handleGiftCreated}
         recipientId={userId}
         recipientName={member.name}
+      />
+
+      {/* Delete surprise gift confirmation modal */}
+      <ConfirmModal
+        isOpen={deleteSurpriseModal.isOpen}
+        onClose={closeDeleteSurpriseModal}
+        onConfirm={handleDeleteSurprise}
+        title="Eliminar regalo sorpresa"
+        message={`¿Seguro que quieres eliminar "${deleteSurpriseModal.gift?.title}"?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={!!deletingSurpriseId}
       />
     </div>
   )
