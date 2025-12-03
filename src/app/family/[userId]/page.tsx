@@ -30,6 +30,9 @@ export default function FamilyMemberPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
 
+  // Filter states
+  const [showAssigned, setShowAssigned] = useState(false)
+
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [deleteSurpriseModal, setDeleteSurpriseModal] = useState<{
@@ -283,10 +286,23 @@ export default function FamilyMemberPage() {
         {/* Wishes list */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span>🎁</span>
-              <span>Deseos de {member.name} ({wishes.length})</span>
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <span>🎁</span>
+                <span>Deseos de {member.name} ({wishes.filter(w => !w.is_assigned || w.assigned_by_me).length})</span>
+              </CardTitle>
+              {wishes.some(w => w.is_assigned && !w.assigned_by_me) && (
+                <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={showAssigned}
+                    onChange={(e) => setShowAssigned(e.target.checked)}
+                    className="w-4 h-4 rounded border-border text-christmas-green focus:ring-christmas-green cursor-pointer"
+                  />
+                  Mostrar asignados ({wishes.filter(w => w.is_assigned && !w.assigned_by_me).length})
+                </label>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {wishes.length === 0 ? (
@@ -296,17 +312,30 @@ export default function FamilyMemberPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {wishes.map((wish) => (
-                  <GiftCard
-                    key={wish.id}
-                    gift={wish}
-                    type="wish"
-                    showAssignment
-                    onAssign={handleAssign}
-                    onUnassign={handleUnassign}
-                    isLoading={actionLoading}
-                  />
-                ))}
+                {wishes
+                  .filter((wish) => {
+                    // Always show wishes assigned by me
+                    if (wish.assigned_by_me) return true
+                    // Show unassigned wishes
+                    if (!wish.is_assigned) return true
+                    // Show assigned wishes only if checkbox is checked
+                    return showAssigned
+                  })
+                  .map((wish) => {
+                    const isAssignedByOther = wish.is_assigned && !wish.assigned_by_me
+                    return (
+                      <GiftCard
+                        key={wish.id}
+                        gift={wish}
+                        type="wish"
+                        showAssignment
+                        onAssign={handleAssign}
+                        onUnassign={handleUnassign}
+                        isLoading={actionLoading}
+                        disabled={isAssignedByOther}
+                      />
+                    )
+                  })}
               </div>
             )}
           </CardContent>
