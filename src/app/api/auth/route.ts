@@ -1,17 +1,34 @@
 import { NextResponse } from 'next/server'
 import { getSession, validateAndCreateSession, clearSession } from '@/lib/auth'
+import { createServerClient } from '@/lib/supabase/server'
 
 import type { NextRequest } from 'next/server'
 
-// GET - Check current session
+// GET - Check current session and fetch fresh user data
 export async function GET() {
   try {
     const session = await getSession()
 
     if (session) {
+      // Fetch fresh user data from database to get updated avatar, etc.
+      const supabase = createServerClient()
+      const { data: freshUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+
+      if (error || !freshUser) {
+        // If user not found, session is invalid
+        return NextResponse.json({
+          success: true,
+          data: { user: null },
+        })
+      }
+
       return NextResponse.json({
         success: true,
-        data: { user: session.user },
+        data: { user: freshUser },
       })
     }
 
