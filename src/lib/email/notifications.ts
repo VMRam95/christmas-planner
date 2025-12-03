@@ -1,5 +1,6 @@
 import emailjs from '@emailjs/browser'
 import { createServerClient } from '@/lib/supabase/server'
+import { createNewWishNotifications } from '@/lib/notifications'
 
 import type { User, Wish } from '@/types'
 
@@ -9,6 +10,7 @@ type NotificationResult = {
   success: boolean
   sentTo: string[]
   errors: string[]
+  dbNotifications: { created: number; errors: number }
 }
 
 /**
@@ -23,9 +25,16 @@ export async function sendNewWishNotifications(
     success: true,
     sentTo: [],
     errors: [],
+    dbNotifications: { created: 0, errors: 0 },
   }
 
   try {
+    // Create in-app notifications in database (independent of email)
+    const dbResult = await createNewWishNotifications(wishCreator, wish)
+    result.dbNotifications = { created: dbResult.created, errors: dbResult.errors }
+    if (!dbResult.success) {
+      console.warn('Some DB notifications failed:', dbResult)
+    }
     // Get EmailJS config
     const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.trim()
     const templateId = process.env.NEXT_PUBLIC_EMAILJS_NOTIFICATION_TEMPLATE_ID?.trim()
