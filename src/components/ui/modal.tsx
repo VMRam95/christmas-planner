@@ -10,6 +10,14 @@ interface ModalProps {
   children: React.ReactNode
   className?: string
   preventClose?: boolean
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+}
+
+const sizeClasses = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
 }
 
 export function Modal({
@@ -19,6 +27,7 @@ export function Modal({
   children,
   className,
   preventClose = false,
+  size = 'md',
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -68,7 +77,8 @@ export function Modal({
         ref={modalRef}
         tabIndex={-1}
         className={cn(
-          'relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 animate-scale-in',
+          'relative bg-white rounded-xl shadow-2xl w-full mx-4 animate-scale-in',
+          sizeClasses[size],
           className
         )}
       >
