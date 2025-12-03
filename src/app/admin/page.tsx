@@ -334,6 +334,9 @@ export default function AdminPage() {
     const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
     const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
 
+    // DEBUG: Log values to verify they're correctly embedded
+    console.log('EmailJS Config:', { serviceId, templateId, publicKey })
+
     if (!serviceId || !templateId || !publicKey) {
       showToast('Error: EmailJS no está configurado', 'error')
       return
