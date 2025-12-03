@@ -35,6 +35,12 @@ export function Header() {
               >
                 Mi Carta
               </Link>
+              <Link
+                href="/settings"
+                className="text-sm font-medium text-muted hover:text-christmas-green transition-colors"
+              >
+                Ajustes
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
