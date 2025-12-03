@@ -7,16 +7,23 @@ import { Header } from '@/components/layout/Header'
 import { GiftForm, GiftCard } from '@/components/gifts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BackLink } from '@/components/ui/back-link'
+import { useToast } from '@/components/ui/toast'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 import type { Wish, SurpriseGift } from '@/types'
 
 export default function MyWishesPage() {
   const router = useRouter()
   const { user, isLoading: authLoading, isAuthenticated } = useAuth()
+  const { showToast } = useToast()
   const [wishes, setWishes] = useState<Wish[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [editingWish, setEditingWish] = useState<Wish | null>(null)
+
+  // State for delete confirmation modal
+  const [wishToDelete, setWishToDelete] = useState<Wish | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -32,13 +39,16 @@ export default function MyWishesPage() {
       const data = await response.json()
       if (data.success) {
         setWishes(data.data)
+      } else {
+        showToast('Error al cargar los deseos', 'error')
       }
     } catch (error) {
       console.error('Error fetching wishes:', error)
+      showToast('Error al cargar los deseos', 'error')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [showToast])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -58,7 +68,13 @@ export default function MyWishesPage() {
       const result = await response.json()
       if (result.success) {
         setWishes((prev) => [result.data, ...prev])
+        showToast('Deseo añadido a tu carta', 'success')
+      } else {
+        showToast(result.error || 'Error al crear el deseo', 'error')
       }
+    } catch (error) {
+      console.error('Error creating wish:', error)
+      showToast('Error al crear el deseo', 'error')
     } finally {
       setActionLoading(false)
     }
@@ -80,26 +96,43 @@ export default function MyWishesPage() {
           prev.map((w) => (w.id === editingWish.id ? result.data : w))
         )
         setEditingWish(null)
+        showToast('Deseo actualizado correctamente', 'success')
+      } else {
+        showToast(result.error || 'Error al actualizar el deseo', 'error')
       }
+    } catch (error) {
+      console.error('Error updating wish:', error)
+      showToast('Error al actualizar el deseo', 'error')
     } finally {
       setActionLoading(false)
     }
   }
 
-  // Delete wish
-  const handleDelete = async (wish: Wish) => {
-    if (!confirm(`¿Seguro que quieres eliminar "${wish.title}"?`)) return
-    setActionLoading(true)
+  // Delete wish - now using modal
+  const handleDeleteClick = (wish: Wish) => {
+    setWishToDelete(wish)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!wishToDelete) return
+    setDeleteLoading(true)
     try {
-      const response = await fetch(`/api/wishes?id=${wish.id}`, {
+      const response = await fetch(`/api/wishes?id=${wishToDelete.id}`, {
         method: 'DELETE',
       })
       const result = await response.json()
       if (result.success) {
-        setWishes((prev) => prev.filter((w) => w.id !== wish.id))
+        setWishes((prev) => prev.filter((w) => w.id !== wishToDelete.id))
+        showToast('Deseo eliminado de tu carta', 'success')
+        setWishToDelete(null)
+      } else {
+        showToast(result.error || 'Error al eliminar el deseo', 'error')
       }
+    } catch (error) {
+      console.error('Error deleting wish:', error)
+      showToast('Error al eliminar el deseo', 'error')
     } finally {
-      setActionLoading(false)
+      setDeleteLoading(false)
     }
   }
 
@@ -109,7 +142,7 @@ export default function MyWishesPage() {
   }
 
   const handleDeleteWrapper = (gift: Wish | SurpriseGift) => {
-    handleDelete(gift as Wish)
+    handleDeleteClick(gift as Wish)
   }
 
   if (authLoading) {
@@ -144,10 +177,11 @@ export default function MyWishesPage() {
           </p>
         </div>
 
-        {/* Form section */}
+        {/* Form section - key prop forces remount when switching between create/edit */}
         <div className="mb-8">
           {editingWish ? (
             <GiftForm
+              key={`edit-${editingWish.id}`}
               mode="wish"
               initialData={{
                 title: editingWish.title,
@@ -160,7 +194,12 @@ export default function MyWishesPage() {
               isLoading={actionLoading}
             />
           ) : (
-            <GiftForm mode="wish" onSubmit={handleCreate} isLoading={actionLoading} />
+            <GiftForm
+              key="create-new"
+              mode="wish"
+              onSubmit={handleCreate}
+              isLoading={actionLoading}
+            />
           )}
         </div>
 
@@ -194,7 +233,7 @@ export default function MyWishesPage() {
                     isOwner
                     onEdit={handleEditWrapper}
                     onDelete={handleDeleteWrapper}
-                    isLoading={actionLoading}
+                    isLoading={actionLoading || deleteLoading}
                   />
                 ))}
               </div>
@@ -207,6 +246,19 @@ export default function MyWishesPage() {
           🤫 No te preocupes, no podrás ver quién te regala cada cosa
         </p>
       </main>
+
+      {/* Delete confirmation modal */}
+      <ConfirmModal
+        isOpen={!!wishToDelete}
+        onClose={() => setWishToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar deseo"
+        message={`¿Seguro que quieres eliminar "${wishToDelete?.title}" de tu carta?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={deleteLoading}
+      />
     </div>
   )
 }
