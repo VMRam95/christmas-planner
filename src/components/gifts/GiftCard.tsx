@@ -24,6 +24,8 @@ type GiftCardProps = {
   isLoading?: boolean
   // Additional info
   ownerLabel?: string
+  // Disabled state (for assigned wishes)
+  disabled?: boolean
 }
 
 export function GiftCard({
@@ -38,17 +40,18 @@ export function GiftCard({
   isOwner = false,
   isLoading = false,
   ownerLabel,
+  disabled = false,
 }: GiftCardProps) {
   const wishGift = gift as WishWithAssignment
   const hasAssignment = 'is_assigned' in gift
 
   return (
-    <div className="bg-white rounded-lg border border-border p-4 hover:shadow-sm transition-shadow">
+    <div className={`bg-white rounded-lg border border-border p-4 transition-shadow ${disabled ? 'opacity-60' : 'hover:shadow-sm'}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           {/* Title */}
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-medium text-foreground truncate">{gift.title}</h3>
+            <h3 className={`font-medium text-foreground truncate ${disabled ? 'line-through text-muted' : ''}`}>{gift.title}</h3>
 
             {/* Priority badge (wishes only) */}
             {showPriority && 'priority' in gift && (
