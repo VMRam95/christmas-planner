@@ -32,10 +32,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServerClient()
 
-    // Query assignments for the provided wish IDs
+    // Query assignments for the provided wish IDs (include assigned_by to detect external assignments)
     const { data, error } = await supabase
       .from('assignments')
-      .select('wish_id')
+      .select('wish_id, assigned_by')
       .in('wish_id', wishIds)
 
     if (error) {

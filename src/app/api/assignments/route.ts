@@ -65,7 +65,7 @@ export async function GET() {
   }
 }
 
-// POST - Assign a wish to current user
+// POST - Assign a wish to current user or mark as external
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { wish_id } = body
+    const { wish_id, external } = body
 
     if (!wish_id) {
       return NextResponse.json(
@@ -123,12 +123,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create assignment
+    // Create assignment (external = true means assigned_by is NULL)
     const { data, error } = await supabase
       .from('assignments')
       .insert({
         wish_id,
-        assigned_by: session.user.id,
+        assigned_by: external ? null : session.user.id,
       })
       .select()
       .single()
@@ -174,12 +174,34 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = createServerClient()
 
-    // Can only delete own assignments
+    // Check if the assignment exists and get its details
+    const { data: assignment } = await supabase
+      .from('assignments')
+      .select('id, assigned_by')
+      .eq('wish_id', wish_id)
+      .single()
+
+    if (!assignment) {
+      return NextResponse.json(
+        { success: false, error: 'Asignación no encontrada' },
+        { status: 404 }
+      )
+    }
+
+    // Can delete if: own assignment OR external assignment (assigned_by is NULL)
+    const canDelete = assignment.assigned_by === session.user.id || assignment.assigned_by === null
+
+    if (!canDelete) {
+      return NextResponse.json(
+        { success: false, error: 'No puedes quitar esta asignación' },
+        { status: 403 }
+      )
+    }
+
     const { error } = await supabase
       .from('assignments')
       .delete()
-      .eq('wish_id', wish_id)
-      .eq('assigned_by', session.user.id)
+      .eq('id', assignment.id)
 
     if (error) {
       console.error('Error deleting assignment:', error)
