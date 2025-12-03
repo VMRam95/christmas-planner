@@ -239,10 +239,10 @@ export default function FamilyMemberPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
-          <span className="text-4xl animate-bounce block">🎄</span>
-          <p className="mt-2 text-muted">Cargando...</p>
+          <span className="text-3xl sm:text-4xl animate-bounce block">🎄</span>
+          <p className="mt-2 text-sm sm:text-base text-muted">Cargando...</p>
         </div>
       </div>
     )
@@ -252,11 +252,11 @@ export default function FamilyMemberPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="max-w-3xl mx-auto px-4 py-8 text-center">
-          <span className="text-6xl block mb-4">🤷</span>
-          <h1 className="text-xl font-semibold mb-2">Usuario no encontrado</h1>
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 text-center">
+          <span className="text-5xl sm:text-6xl block mb-3 sm:mb-4">🤷</span>
+          <h1 className="text-lg sm:text-xl font-semibold mb-2">Usuario no encontrado</h1>
           <Link href="/dashboard">
-            <Button>Volver al inicio</Button>
+            <Button className="min-h-[44px] px-6">Volver al inicio</Button>
           </Link>
         </main>
       </div>
@@ -267,51 +267,53 @@ export default function FamilyMemberPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-6" />
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Member header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <MemberAvatar name={member.name} avatarUrl={member.avatar_url} size="lg" />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground break-words">
               Carta de {member.name}
             </h1>
-            <p className="text-muted">
+            <p className="text-sm sm:text-base text-muted mt-1">
               Mira lo que le gustaría recibir y asígnate un regalo
             </p>
           </div>
         </div>
 
         {/* Wishes list */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <span>🎁</span>
-                <span>Deseos de {member.name} ({wishes.filter(w => !w.is_assigned || w.assigned_by_me).length})</span>
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <span className="text-xl sm:text-2xl">🎁</span>
+                <span className="break-words">Deseos de {member.name} ({wishes.filter(w => !w.is_assigned || w.assigned_by_me).length})</span>
               </CardTitle>
               {wishes.some(w => w.is_assigned && !w.assigned_by_me) && (
-                <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none">
+                <label className="flex items-center gap-2 text-sm text-muted cursor-pointer select-none min-h-[44px] sm:min-h-0">
                   <input
                     type="checkbox"
                     checked={showAssigned}
                     onChange={(e) => setShowAssigned(e.target.checked)}
-                    className="w-4 h-4 rounded border-border text-christmas-green focus:ring-christmas-green cursor-pointer"
+                    className="w-5 h-5 sm:w-4 sm:h-4 rounded border-border text-christmas-green focus:ring-christmas-green cursor-pointer flex-shrink-0"
                   />
-                  Mostrar asignados ({wishes.filter(w => w.is_assigned && !w.assigned_by_me).length})
+                  <span className="whitespace-nowrap">
+                    Mostrar asignados ({wishes.filter(w => w.is_assigned && !w.assigned_by_me).length})
+                  </span>
                 </label>
               )}
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             {wishes.length === 0 ? (
-              <div className="py-8 text-center">
-                <span className="text-4xl block mb-2">📭</span>
-                <p className="text-muted">{member.name} aún no ha añadido deseos</p>
+              <div className="py-6 sm:py-8 text-center">
+                <span className="text-3xl sm:text-4xl block mb-2">📭</span>
+                <p className="text-sm sm:text-base text-muted">{member.name} aún no ha añadido deseos</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {wishes
                   .filter((wish) => {
                     // Always show wishes assigned by me
@@ -343,18 +345,18 @@ export default function FamilyMemberPage() {
 
         {/* Surprise gifts from others */}
         {surpriseGifts.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span>🎉</span>
-                <span>Regalos sorpresa para {member.name} ({surpriseGifts.length})</span>
+          <Card className="mb-4 sm:mb-6">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <span className="text-xl sm:text-2xl">🎉</span>
+                <span className="break-words">Regalos sorpresa para {member.name} ({surpriseGifts.length})</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted mb-4">
+            <CardContent className="p-4 sm:p-6">
+              <p className="text-sm sm:text-base text-muted mb-3 sm:mb-4">
                 Otros familiares ya han comprometido estos regalos. Evita comprar lo mismo.
               </p>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {surpriseGifts.map((gift) => {
                   const isMyGift = currentUser ? gift.giver_id === currentUser.id : false
                   return (
@@ -378,7 +380,7 @@ export default function FamilyMemberPage() {
         {/* Create surprise gift action */}
         <div
           onClick={() => setShowCreateModal(true)}
-          className="cursor-pointer"
+          className="cursor-pointer touch-manipulation"
           role="button"
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && setShowCreateModal(true)}
@@ -388,7 +390,7 @@ export default function FamilyMemberPage() {
             title="Crear Regalo"
             description={`Crea un regalo sorpresa para ${member.name}`}
             action={
-              <Button variant="primary" size="sm">
+              <Button variant="primary" size="sm" className="min-h-[44px] px-4">
                 Crear
               </Button>
             }

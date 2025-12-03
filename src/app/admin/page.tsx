@@ -383,31 +383,31 @@ E inicia sesión con tu email: ${familyUser.email}
 
   // Generate invite email HTML preview component
   const InviteEmailPreview = ({ familyUser }: { familyUser: User }) => (
-    <div className="bg-gray-100 p-4 rounded-lg">
+    <div className="bg-gray-100 p-2 sm:p-4 rounded-lg">
       {/* Email client header simulation */}
-      <div className="bg-white rounded-t-lg border border-gray-200 px-4 py-3 flex items-center gap-3">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-400" />
-          <div className="w-3 h-3 rounded-full bg-yellow-400" />
-          <div className="w-3 h-3 rounded-full bg-green-400" />
+      <div className="bg-white rounded-t-lg border border-gray-200 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
+        <div className="flex gap-1 sm:gap-1.5">
+          <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-400" />
+          <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-400" />
+          <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-400" />
         </div>
-        <div className="flex-1 text-center text-xs text-gray-500">
+        <div className="flex-1 text-center text-[10px] sm:text-xs text-gray-500">
           Vista previa del email
         </div>
       </div>
 
       {/* Email header */}
-      <div className="bg-white border-x border-gray-200 px-4 py-3 space-y-1">
-        <div className="flex items-center text-sm">
-          <span className="text-gray-500 w-16">De:</span>
-          <span className="text-gray-800">Christmas Planner &lt;noreply@christmas-planner.app&gt;</span>
+      <div className="bg-white border-x border-gray-200 px-3 sm:px-4 py-2 sm:py-3 space-y-1">
+        <div className="flex items-start sm:items-center text-xs sm:text-sm">
+          <span className="text-gray-500 w-12 sm:w-16 flex-shrink-0">De:</span>
+          <span className="text-gray-800 break-all">Christmas Planner &lt;noreply@christmas-planner.app&gt;</span>
         </div>
-        <div className="flex items-center text-sm">
-          <span className="text-gray-500 w-16">Para:</span>
-          <span className="text-gray-800">{familyUser.name} &lt;{familyUser.email}&gt;</span>
+        <div className="flex items-start sm:items-center text-xs sm:text-sm">
+          <span className="text-gray-500 w-12 sm:w-16 flex-shrink-0">Para:</span>
+          <span className="text-gray-800 break-all">{familyUser.name} &lt;{familyUser.email}&gt;</span>
         </div>
-        <div className="flex items-center text-sm">
-          <span className="text-gray-500 w-16">Asunto:</span>
+        <div className="flex items-start sm:items-center text-xs sm:text-sm">
+          <span className="text-gray-500 w-12 sm:w-16 flex-shrink-0">Asunto:</span>
           <span className="text-gray-800 font-medium">🎄 ¡Has sido invitado al Christmas Planner!</span>
         </div>
       </div>
@@ -415,25 +415,25 @@ E inicia sesión con tu email: ${familyUser.email}
       {/* Email body */}
       <div className="bg-white rounded-b-lg border border-t-0 border-gray-200 overflow-hidden">
         {/* Christmas header banner */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-8 text-center">
-          <div className="text-5xl mb-2">🎄</div>
-          <h1 className="text-2xl font-bold text-white">Christmas Planner</h1>
-          <p className="text-red-100 text-sm mt-1">La app para organizar los regalos de la familia</p>
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-4 sm:px-6 py-6 sm:py-8 text-center">
+          <div className="text-3xl sm:text-5xl mb-2">🎄</div>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Christmas Planner</h1>
+          <p className="text-red-100 text-xs sm:text-sm mt-1">La app para organizar los regalos de la familia</p>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-6">
-          <p className="text-gray-800 text-lg mb-4">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
+          <p className="text-gray-800 text-base sm:text-lg mb-3 sm:mb-4">
             ¡Hola <strong>{familyUser.name}</strong>! 👋
           </p>
 
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 text-sm sm:text-base mb-3 sm:mb-4">
             Has sido invitado/a a participar en el <strong>Christmas Planner</strong> de la familia.
           </p>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <p className="text-green-800 font-medium mb-2">Con esta aplicación podrás:</p>
-            <ul className="text-green-700 space-y-1">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+            <p className="text-green-800 font-medium mb-2 text-xs sm:text-sm">Con esta aplicación podrás:</p>
+            <ul className="text-green-700 space-y-1 text-xs sm:text-sm">
               <li className="flex items-center gap-2">
                 <span>📝</span> Crear tu carta de deseos navideños
               </li>
@@ -447,32 +447,32 @@ E inicia sesión con tu email: ${familyUser.email}
           </div>
 
           {/* CTA Button */}
-          <div className="text-center mb-6">
-            <div className="inline-block bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg">
+          <div className="text-center mb-4 sm:mb-6">
+            <div className="inline-block bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-lg shadow-lg text-sm sm:text-base">
               Acceder a Christmas Planner
             </div>
-            <p className="text-xs text-gray-400 mt-2 break-all">{APP_URL}</p>
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-2 break-all">{APP_URL}</p>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <p className="text-gray-600 text-sm">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+            <p className="text-gray-600 text-xs sm:text-sm">
               <strong>📧 Tu email de acceso:</strong>
             </p>
-            <p className="text-gray-800 font-mono bg-white px-3 py-2 rounded border mt-2">
+            <p className="text-gray-800 font-mono bg-white px-2 sm:px-3 py-1.5 sm:py-2 rounded border mt-2 text-xs sm:text-sm break-all">
               {familyUser.email}
             </p>
           </div>
 
-          <p className="text-gray-500 text-sm text-center">
+          <p className="text-gray-500 text-xs sm:text-sm text-center">
             Solo tienes que introducir tu email para entrar, ¡sin contraseña!
           </p>
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 text-center">
-          <p className="text-2xl mb-2">🎄🎁🎅</p>
-          <p className="text-gray-600 font-medium">¡Felices Fiestas!</p>
-          <p className="text-gray-400 text-xs mt-2">
+        <div className="bg-gray-50 border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4 text-center">
+          <p className="text-xl sm:text-2xl mb-2">🎄🎁🎅</p>
+          <p className="text-gray-600 font-medium text-sm sm:text-base">¡Felices Fiestas!</p>
+          <p className="text-gray-400 text-[10px] sm:text-xs mt-2">
             Este email fue enviado desde Christmas Planner
           </p>
         </div>
@@ -527,39 +527,39 @@ E inicia sesión con tu email: ${familyUser.email}
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-6" />
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Page header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground flex items-center gap-2">
             🎄 Administración de Familia
           </h1>
-          <p className="text-muted mt-1">
+          <p className="text-sm sm:text-base text-muted mt-1">
             Gestiona los miembros de tu familia navideña
           </p>
         </div>
 
         {/* Main section header */}
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+        <div className="mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
             👨‍👩‍👧‍👦 Miembros de Familia
           </h2>
-          <p className="text-sm text-muted mt-1">
+          <p className="text-xs sm:text-sm text-muted mt-1">
             Agrega, edita y gestiona los miembros de tu familia
           </p>
         </div>
 
         {/* Add user form */}
-        <Card className="mb-6">
+        <Card className="mb-4 sm:mb-6">
           <CardHeader>
-            <CardTitle>➕ Agregar Miembro</CardTitle>
+            <CardTitle className="text-base sm:text-lg">➕ Agregar Miembro</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAddUser} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
+                  <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                     Nombre
                   </label>
                   <Input
@@ -569,10 +569,11 @@ E inicia sesión con tu email: ${familyUser.email}
                     value={newUserName}
                     onChange={(e) => setNewUserName(e.target.value)}
                     disabled={actionLoading}
+                    className="h-11 sm:h-10"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+                  <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                     Email
                   </label>
                   <Input
@@ -582,45 +583,46 @@ E inicia sesión con tu email: ${familyUser.email}
                     value={newUserEmail}
                     onChange={(e) => setNewUserEmail(e.target.value)}
                     disabled={actionLoading}
+                    className="h-11 sm:h-10"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="avatar" className="block text-sm font-medium text-foreground mb-1">
+                <label htmlFor="avatar" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                   Foto - Opcional
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                   {/* Preview */}
                   {newUserAvatarPreview ? (
                     <div className="relative">
                       <img
                         src={newUserAvatarPreview}
                         alt="Preview"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-christmas-green"
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-christmas-green"
                       />
                       <button
                         type="button"
                         onClick={clearNewAvatar}
-                        className="absolute -top-1 -right-1 w-5 h-5 bg-christmas-red text-white rounded-full flex items-center justify-center text-xs hover:bg-christmas-red-dark"
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-christmas-red text-white rounded-full flex items-center justify-center text-xs hover:bg-christmas-red-dark touch-manipulation"
                         disabled={actionLoading}
                       >
                         &times;
                       </button>
                     </div>
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xl sm:text-2xl">
                       📷
                     </div>
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 w-full">
                     <input
                       id="avatar"
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
                       onChange={handleNewAvatarChange}
                       disabled={actionLoading}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-christmas-green/10 file:text-christmas-green hover:file:bg-christmas-green/20 file:cursor-pointer cursor-pointer"
+                      className="block w-full text-xs sm:text-sm text-gray-500 file:mr-2 sm:file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-christmas-green/10 file:text-christmas-green hover:file:bg-christmas-green/20 file:cursor-pointer cursor-pointer"
                     />
                     <p className="text-xs text-muted mt-1">
                       JPG, PNG, WebP o GIF. Máximo 2MB
@@ -631,14 +633,14 @@ E inicia sesión con tu email: ${familyUser.email}
 
               {error && (
                 <div className="p-3 bg-christmas-red/10 border border-christmas-red/20 rounded-lg">
-                  <p className="text-sm text-christmas-red">{error}</p>
+                  <p className="text-xs sm:text-sm text-christmas-red">{error}</p>
                 </div>
               )}
 
               <Button
                 type="submit"
                 disabled={actionLoading || !newUserName.trim() || !newUserEmail.trim()}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] text-sm sm:text-base"
               >
                 {uploadingAvatar ? 'Subiendo imagen...' : actionLoading ? 'Agregando...' : 'Agregar Miembro'}
               </Button>
@@ -649,62 +651,66 @@ E inicia sesión con tu email: ${familyUser.email}
         {/* Users list */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>👥 Miembros de la Familia</span>
-              <span className="text-sm font-normal text-muted">
+            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <span className="text-base sm:text-lg">👥 Miembros de la Familia</span>
+              <span className="text-xs sm:text-sm font-normal text-muted">
                 Total: {users.length}
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {users.length === 0 ? (
-              <div className="py-8 text-center">
-                <span className="text-4xl block mb-2">👨‍👩‍👧‍👦</span>
-                <p className="text-muted">No hay miembros registrados</p>
-                <p className="text-sm text-muted mt-1">
+              <div className="py-6 sm:py-8 text-center">
+                <span className="text-3xl sm:text-4xl block mb-2">👨‍👩‍👧‍👦</span>
+                <p className="text-sm sm:text-base text-muted">No hay miembros registrados</p>
+                <p className="text-xs sm:text-sm text-muted mt-1">
                   Agrega el primer miembro arriba
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {users.map((familyUser) => (
                   <div
                     key={familyUser.id}
-                    className="flex items-center gap-4 p-4 bg-christmas-snow rounded-lg border border-border hover:shadow-sm transition-shadow"
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-christmas-snow rounded-lg border border-border hover:shadow-sm transition-shadow"
                   >
-                    {/* Avatar */}
-                    <Avatar
-                      name={familyUser.name}
-                      avatarUrl={familyUser.avatar_url}
-                      size="lg"
-                    />
+                    {/* Avatar and info section */}
+                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 w-full sm:w-auto">
+                      {/* Avatar */}
+                      <Avatar
+                        name={familyUser.name}
+                        avatarUrl={familyUser.avatar_url}
+                        size="lg"
+                        className="flex-shrink-0"
+                      />
 
-                    {/* User info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-foreground truncate">
-                          {familyUser.name}
-                        </h3>
-                        {familyUser.email === ADMIN_EMAIL && (
-                          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-christmas-gold/20 text-christmas-gold-dark rounded-full">
-                            👑 Admin
-                          </span>
-                        )}
+                      {/* User info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-medium text-sm sm:text-base text-foreground truncate">
+                            {familyUser.name}
+                          </h3>
+                          {familyUser.email === ADMIN_EMAIL && (
+                            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-christmas-gold/20 text-christmas-gold-dark rounded-full whitespace-nowrap">
+                              👑 Admin
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs sm:text-sm text-muted truncate">{familyUser.email}</p>
                       </div>
-                      <p className="text-sm text-muted truncate">{familyUser.email}</p>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                       {/* Invite button */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openInviteModal(familyUser)}
                         disabled={actionLoading}
-                        className="text-christmas-green hover:text-christmas-green-dark hover:bg-christmas-green/10"
+                        className="text-christmas-green hover:text-christmas-green-dark hover:bg-christmas-green/10 min-h-[44px] sm:min-h-[36px] text-xs sm:text-sm flex-1 sm:flex-initial"
                       >
-                        📧 Invitar
+                        📧 <span className="hidden sm:inline ml-1">Invitar</span>
                       </Button>
 
                       {/* Edit button */}
@@ -713,7 +719,7 @@ E inicia sesión con tu email: ${familyUser.email}
                         size="sm"
                         onClick={() => openEditModal(familyUser)}
                         disabled={actionLoading}
-                        className="hover:bg-christmas-gold/10"
+                        className="hover:bg-christmas-gold/10 min-h-[44px] sm:min-h-[36px] px-3 sm:px-4"
                       >
                         ✏️
                       </Button>
@@ -724,7 +730,7 @@ E inicia sesión con tu email: ${familyUser.email}
                         size="sm"
                         onClick={() => openDeleteModal(familyUser)}
                         disabled={actionLoading || familyUser.email === ADMIN_EMAIL}
-                        className="text-christmas-red hover:text-christmas-red-dark hover:bg-christmas-red/10"
+                        className="text-christmas-red hover:text-christmas-red-dark hover:bg-christmas-red/10 min-h-[44px] sm:min-h-[36px] px-3 sm:px-4"
                       >
                         🗑️
                       </Button>
@@ -750,7 +756,7 @@ E inicia sesión con tu email: ${familyUser.email}
         preventClose={actionLoading}
       >
         <form onSubmit={handleUpdateUser}>
-          <div className="px-6 py-4 space-y-4">
+          <div className="px-4 sm:px-6 py-4 space-y-4">
             {/* Preview avatar */}
             {editModal.user && (
               <div className="flex justify-center">
@@ -763,7 +769,7 @@ E inicia sesión con tu email: ${familyUser.email}
             )}
 
             <div>
-              <label htmlFor="edit-name" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="edit-name" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                 Nombre
               </label>
               <Input
@@ -774,11 +780,12 @@ E inicia sesión con tu email: ${familyUser.email}
                 onChange={(e) => setEditName(e.target.value)}
                 disabled={actionLoading}
                 required
+                className="h-11 sm:h-10"
               />
             </div>
 
             <div>
-              <label htmlFor="edit-email" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="edit-email" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                 Email
               </label>
               <Input
@@ -789,27 +796,28 @@ E inicia sesión con tu email: ${familyUser.email}
                 onChange={(e) => setEditEmail(e.target.value)}
                 disabled={actionLoading}
                 required
+                className="h-11 sm:h-10"
               />
             </div>
 
             <div>
-              <label htmlFor="edit-avatar" className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="edit-avatar" className="block text-xs sm:text-sm font-medium text-foreground mb-1">
                 Cambiar Foto - Opcional
               </label>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                 <input
                   id="edit-avatar"
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   onChange={handleEditAvatarChange}
                   disabled={actionLoading}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-christmas-green/10 file:text-christmas-green hover:file:bg-christmas-green/20 file:cursor-pointer cursor-pointer"
+                  className="block w-full text-xs sm:text-sm text-gray-500 file:mr-2 sm:file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-medium file:bg-christmas-green/10 file:text-christmas-green hover:file:bg-christmas-green/20 file:cursor-pointer cursor-pointer"
                 />
                 {editAvatarFile && (
                   <button
                     type="button"
                     onClick={clearEditAvatar}
-                    className="text-christmas-red hover:text-christmas-red-dark text-sm"
+                    className="text-christmas-red hover:text-christmas-red-dark text-xs sm:text-sm min-h-[44px] sm:min-h-auto px-3 py-2 sm:p-0 border sm:border-0 rounded-lg sm:rounded-none border-christmas-red/30 sm:border-transparent touch-manipulation"
                     disabled={actionLoading}
                   >
                     Cancelar
@@ -822,12 +830,13 @@ E inicia sesión con tu email: ${familyUser.email}
             </div>
           </div>
 
-          <div className="px-6 py-4 border-t border-border flex justify-end gap-3">
+          <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={closeEditModal}
               disabled={actionLoading}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] order-2 sm:order-1"
             >
               Cancelar
             </Button>
@@ -835,6 +844,7 @@ E inicia sesión con tu email: ${familyUser.email}
               type="submit"
               variant="primary"
               disabled={actionLoading || !editName.trim() || !editEmail.trim()}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] order-1 sm:order-2"
             >
               {uploadingAvatar ? 'Subiendo imagen...' : actionLoading ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
@@ -863,34 +873,36 @@ E inicia sesión con tu email: ${familyUser.email}
         size="lg"
         preventClose={sendingInvite}
       >
-        <div className="px-6 py-4">
+        <div className="px-4 sm:px-6 py-4">
           {inviteModal.user && (
             <>
-              <p className="text-sm text-muted mb-4">
+              <p className="text-xs sm:text-sm text-muted mb-4">
                 Así se vería el email de invitación para <strong>{inviteModal.user.name}</strong>:
               </p>
 
               {/* HTML Email preview */}
-              <div className="max-h-[60vh] overflow-y-auto">
+              <div className="max-h-[50vh] sm:max-h-[60vh] overflow-y-auto">
                 <InviteEmailPreview familyUser={inviteModal.user} />
               </div>
             </>
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-border flex justify-between">
+        <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row justify-between gap-3">
           <Button
             variant="outline"
             onClick={copyEmailToClipboard}
             disabled={sendingInvite}
+            className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] order-3 sm:order-1"
           >
             📋 Copiar texto
           </Button>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={closeInviteModal}
               disabled={sendingInvite}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] order-2 sm:order-1"
             >
               Cancelar
             </Button>
@@ -898,6 +910,7 @@ E inicia sesión con tu email: ${familyUser.email}
               variant="primary"
               onClick={handleSendInvite}
               disabled={sendingInvite}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[40px] order-1 sm:order-2"
             >
               {sendingInvite ? 'Enviando...' : '📧 Enviar email'}
             </Button>

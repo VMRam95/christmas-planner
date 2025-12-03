@@ -241,26 +241,26 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
         {/* Welcome section - More compact */}
-        <div className="mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
             ¡Hola, {user?.name}! 👋
           </h1>
-          <p className="text-sm text-muted mt-0.5">
+          <p className="text-xs sm:text-sm text-muted mt-0.5">
             Bienvenido al organizador de regalos navideños
           </p>
         </div>
 
         {/* Quick actions - More compact with SectionCard */}
-        <div className="mb-6 grid sm:grid-cols-2 gap-4">
+        <div className="mb-4 sm:mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Link href="/my-wishes">
             <SectionCard
               icon="📝"
               title="Mi Carta a los Reyes"
               description="Añade lo que te gustaría recibir"
               action={
-                <Button variant="secondary" size="sm">
+                <Button variant="secondary" size="sm" className="min-h-[44px] sm:min-h-[36px]">
                   Ver carta
                 </Button>
               }
@@ -278,7 +278,7 @@ export default function DashboardPage() {
               title="Crear Regalo"
               description="Crea un regalo para alguien especial"
               action={
-                <Button variant="primary" size="sm">
+                <Button variant="primary" size="sm" className="min-h-[44px] sm:min-h-[36px]">
                   Crear
                 </Button>
               }
@@ -287,19 +287,19 @@ export default function DashboardPage() {
         </div>
 
         {/* My assigned gifts section - More compact with collapsible lists */}
-        <Card className="mb-6">
-          <CardHeader className="py-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <span>🎁</span>
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="py-2.5 px-3 sm:py-3 sm:px-4">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <span className="text-base sm:text-lg">🎁</span>
               <span>Mis regalos asignados</span>
               {(assignments.length > 0 || surpriseGifts.length > 0) && (
-                <Badge variant="success" className="ml-auto">
+                <Badge variant="success" className="ml-auto text-xs">
                   {assignments.length + surpriseGifts.length}
                 </Badge>
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-3">
+          <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
             {loadingAssignments ? (
               <EmptyState icon="⏳" message="Cargando regalos asignados..." />
             ) : assignments.length === 0 && surpriseGifts.length === 0 ? (
@@ -308,36 +308,36 @@ export default function DashboardPage() {
                 message="Aún no tienes regalos asignados. Visita las listas de deseos de tu familia para asignarte regalos."
               />
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Assigned wishes */}
                 {assignments.length > 0 && (
                   <div>
-                    <h3 className="font-medium mb-2 text-xs text-muted uppercase tracking-wide">
+                    <h3 className="font-medium mb-2 text-[10px] sm:text-xs text-muted uppercase tracking-wide">
                       Deseos asignados ({assignments.length})
                     </h3>
                     <div className="space-y-2">
                       {visibleAssignments.map((assignment) => (
                         <div
                           key={assignment.id}
-                          className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-christmas-green/50 hover:bg-christmas-green/5 transition-colors"
+                          className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border border-border hover:border-christmas-green/50 hover:bg-christmas-green/5 transition-colors"
                         >
-                          <span className="text-xl shrink-0">📝</span>
-                          <div className="flex-1 min-w-0">
+                          <span className="text-lg sm:text-xl shrink-0">📝</span>
+                          <div className="flex-1 min-w-0 w-full sm:w-auto">
                             <div className="flex items-start gap-2 mb-1">
-                              <h4 className="font-medium text-sm text-foreground">
+                              <h4 className="font-medium text-xs sm:text-sm text-foreground">
                                 {assignment.wishes.title}
                               </h4>
-                              <Badge variant={priorityColors[assignment.wishes.priority]} className="shrink-0">
+                              <Badge variant={priorityColors[assignment.wishes.priority]} className="shrink-0 text-[10px] sm:text-xs">
                                 {priorityLabels[assignment.wishes.priority]}
                               </Badge>
                             </div>
                             {assignment.wishes.description && (
-                              <p className="text-xs text-muted mb-1.5 line-clamp-2">
+                              <p className="text-[11px] sm:text-xs text-muted mb-1.5 line-clamp-2">
                                 {assignment.wishes.description}
                               </p>
                             )}
-                            <div className="flex items-center gap-3 flex-wrap">
-                              <p className="text-xs text-muted">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <p className="text-[11px] sm:text-xs text-muted">
                                 Para: <span className="font-medium text-foreground">
                                   {getRecipientName(assignment.wishes.user_id)}
                                 </span>
@@ -347,17 +347,17 @@ export default function DashboardPage() {
                                   href={assignment.wishes.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-christmas-green hover:text-christmas-green-dark inline-flex items-center gap-1"
+                                  className="text-[11px] sm:text-xs text-christmas-green hover:text-christmas-green-dark inline-flex items-center gap-1"
                                 >
                                   Ver enlace ↗
                                 </a>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                             <Link
                               href={`/family/${assignment.wishes.user_id}`}
-                              className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium px-2 py-1 rounded hover:bg-christmas-green/10 transition-colors"
+                              className="text-[11px] sm:text-xs text-christmas-green hover:text-christmas-green-dark font-medium px-2 py-1.5 sm:py-1 rounded hover:bg-christmas-green/10 transition-colors min-h-[44px] sm:min-h-0 flex items-center justify-center flex-1 sm:flex-initial"
                             >
                               Ver perfil
                             </Link>
@@ -366,6 +366,7 @@ export default function DashboardPage() {
                               size="sm"
                               onClick={() => openUnassignModal(assignment.wish_id, assignment.wishes.title)}
                               disabled={unassigningWishId === assignment.wish_id}
+                              className="min-h-[44px] sm:min-h-[36px] text-xs flex-1 sm:flex-initial"
                             >
                               {unassigningWishId === assignment.wish_id
                                 ? 'Quitando...'
@@ -378,7 +379,7 @@ export default function DashboardPage() {
                     {hasMoreAssignments && (
                       <button
                         onClick={() => setShowAllAssignments(!showAllAssignments)}
-                        className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium mt-2 w-full text-center py-2 hover:bg-christmas-green/5 rounded transition-colors"
+                        className="text-[11px] sm:text-xs text-christmas-green hover:text-christmas-green-dark font-medium mt-2 w-full text-center py-2.5 sm:py-2 hover:bg-christmas-green/5 rounded transition-colors min-h-[44px] sm:min-h-0"
                       >
                         {showAllAssignments
                           ? 'Ver menos'
@@ -391,27 +392,27 @@ export default function DashboardPage() {
                 {/* Surprise gifts */}
                 {surpriseGifts.length > 0 && (
                   <div>
-                    <h3 className="font-medium mb-2 text-xs text-muted uppercase tracking-wide">
+                    <h3 className="font-medium mb-2 text-[10px] sm:text-xs text-muted uppercase tracking-wide">
                       Regalos sorpresa ({surpriseGifts.length})
                     </h3>
                     <div className="space-y-2">
                       {visibleSurprises.map((gift) => (
                         <div
                           key={gift.id}
-                          className="flex items-start gap-3 p-3 rounded-lg border border-border hover:border-christmas-gold/50 hover:bg-christmas-gold/5 transition-colors"
+                          className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border border-border hover:border-christmas-gold/50 hover:bg-christmas-gold/5 transition-colors"
                         >
-                          <span className="text-xl shrink-0">🎉</span>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm text-foreground mb-1">
+                          <span className="text-lg sm:text-xl shrink-0">🎉</span>
+                          <div className="flex-1 min-w-0 w-full sm:w-auto">
+                            <h4 className="font-medium text-xs sm:text-sm text-foreground mb-1">
                               {gift.title}
                             </h4>
                             {gift.description && (
-                              <p className="text-xs text-muted mb-1.5 line-clamp-2">
+                              <p className="text-[11px] sm:text-xs text-muted mb-1.5 line-clamp-2">
                                 {gift.description}
                               </p>
                             )}
-                            <div className="flex items-center gap-3 flex-wrap">
-                              <p className="text-xs text-muted">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <p className="text-[11px] sm:text-xs text-muted">
                                 Para: <span className="font-medium text-foreground">
                                   {gift.recipient.name}
                                 </span>
@@ -421,17 +422,17 @@ export default function DashboardPage() {
                                   href={gift.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-christmas-green hover:text-christmas-green-dark inline-flex items-center gap-1"
+                                  className="text-[11px] sm:text-xs text-christmas-green hover:text-christmas-green-dark inline-flex items-center gap-1"
                                 >
                                   Ver enlace ↗
                                 </a>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                             <Link
                               href={`/family/${gift.recipient_id}`}
-                              className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium px-2 py-1 rounded hover:bg-christmas-green/10 transition-colors"
+                              className="text-[11px] sm:text-xs text-christmas-green hover:text-christmas-green-dark font-medium px-2 py-1.5 sm:py-1 rounded hover:bg-christmas-green/10 transition-colors min-h-[44px] sm:min-h-0 flex items-center justify-center flex-1 sm:flex-initial"
                             >
                               Ver perfil
                             </Link>
@@ -440,6 +441,7 @@ export default function DashboardPage() {
                               size="sm"
                               onClick={() => openDeleteSurpriseModal(gift.id, gift.title)}
                               disabled={deletingSurpriseId === gift.id}
+                              className="min-h-[44px] sm:min-h-[36px] text-xs flex-1 sm:flex-initial"
                             >
                               {deletingSurpriseId === gift.id
                                 ? 'Eliminando...'
@@ -452,7 +454,7 @@ export default function DashboardPage() {
                     {hasMoreSurprises && (
                       <button
                         onClick={() => setShowAllSurprises(!showAllSurprises)}
-                        className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium mt-2 w-full text-center py-2 hover:bg-christmas-green/5 rounded transition-colors"
+                        className="text-[11px] sm:text-xs text-christmas-green hover:text-christmas-green-dark font-medium mt-2 w-full text-center py-2.5 sm:py-2 hover:bg-christmas-green/5 rounded transition-colors min-h-[44px] sm:min-h-0"
                       >
                         {showAllSurprises
                           ? 'Ver menos'
@@ -466,20 +468,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Family members - Horizontal scroll on mobile, grid on desktop */}
+        {/* Family members - Responsive grid layout */}
         <Card>
-          <CardHeader className="py-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <span>👨‍👩‍👧‍👦</span>
+          <CardHeader className="py-2.5 px-3 sm:py-3 sm:px-4">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <span className="text-base sm:text-lg">👨‍👩‍👧‍👦</span>
               <span>Familia</span>
               {otherMembers.length > 0 && (
-                <Badge variant="info" className="ml-auto">
+                <Badge variant="info" className="ml-auto text-xs">
                   {otherMembers.length}
                 </Badge>
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-3">
+          <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
             {loadingMembers ? (
               <EmptyState icon="⏳" message="Cargando miembros de la familia..." />
             ) : otherMembers.length === 0 ? (
@@ -488,18 +490,18 @@ export default function DashboardPage() {
                 message="No hay otros miembros de la familia registrados"
               />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                 {otherMembers.map((member) => (
                   <Link
                     key={member.id}
                     href={`/family/${member.id}`}
-                    className="block"
+                    className="block min-h-[60px] sm:min-h-0"
                   >
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-christmas-green hover:bg-christmas-green/5 transition-colors">
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-christmas-green hover:bg-christmas-green/5 transition-colors h-full">
                       <MemberAvatar name={member.name} avatarUrl={member.avatar_url} size="sm" />
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{member.name}</p>
-                        <p className="text-xs text-muted">Ver lista de deseos</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-xs sm:text-sm truncate">{member.name}</p>
+                        <p className="text-[11px] sm:text-xs text-muted">Ver lista de deseos</p>
                       </div>
                     </div>
                   </Link>

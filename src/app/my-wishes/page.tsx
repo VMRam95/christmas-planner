@@ -164,21 +164,21 @@ export default function MyWishesPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-6" />
+      <main className="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+        <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Page header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
             📝 Mi Carta a los Reyes
           </h1>
-          <p className="text-muted mt-1">
+          <p className="text-sm sm:text-base text-muted mt-1 sm:mt-2">
             Añade lo que te gustaría recibir esta Navidad, {user?.name}
           </p>
         </div>
 
         {/* Form section - key prop forces remount when switching between create/edit */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           {editingWish ? (
             <GiftForm
               key={`edit-${editingWish.id}`}
@@ -206,25 +206,25 @@ export default function MyWishesPage() {
         {/* Wishes list */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex items-center justify-between text-base sm:text-lg md:text-xl">
               <span>🎁 Mis deseos ({wishes.length})</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="py-8 text-center text-muted">
+              <div className="py-6 sm:py-8 text-center text-muted text-sm sm:text-base">
                 Cargando tus deseos...
               </div>
             ) : wishes.length === 0 ? (
-              <div className="py-8 text-center">
-                <span className="text-4xl block mb-2">📭</span>
-                <p className="text-muted">Tu carta está vacía</p>
-                <p className="text-sm text-muted mt-1">
+              <div className="py-6 sm:py-8 text-center">
+                <span className="text-3xl sm:text-4xl block mb-2">📭</span>
+                <p className="text-muted text-sm sm:text-base">Tu carta está vacía</p>
+                <p className="text-xs sm:text-sm text-muted mt-1">
                   ¡Añade tu primer deseo arriba!
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {wishes.map((wish) => (
                   <GiftCard
                     key={wish.id}
@@ -242,7 +242,7 @@ export default function MyWishesPage() {
         </Card>
 
         {/* Info note */}
-        <p className="mt-4 text-xs text-center text-muted">
+        <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-center text-muted px-2">
           🤫 No te preocupes, no podrás ver quién te regala cada cosa
         </p>
       </main>
