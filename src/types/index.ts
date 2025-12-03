@@ -35,6 +35,14 @@ export type SurpriseGift = {
   created_at: string
 }
 
+export type UserPreferences = {
+  id: string
+  user_id: string
+  email_notifications_enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
 // Extended types with relations
 
 export type WishWithAssignment = Wish & {

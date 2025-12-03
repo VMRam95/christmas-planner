@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
+import { sendNewWishNotifications } from '@/lib/email/notifications'
 
 import type { NextRequest } from 'next/server'
 
@@ -87,6 +88,18 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Send email notifications to family members (async, don't block response)
+    sendNewWishNotifications(session.user, data).then((result) => {
+      if (result.sentTo.length > 0) {
+        console.log(`Notifications sent to: ${result.sentTo.join(', ')}`)
+      }
+      if (result.errors.length > 0) {
+        console.warn('Notification errors:', result.errors)
+      }
+    }).catch((err) => {
+      console.error('Error sending notifications:', err)
+    })
 
     return NextResponse.json({ success: true, data })
   } catch (error) {
