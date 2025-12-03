@@ -21,7 +21,7 @@ export type Wish = {
 export type Assignment = {
   id: string
   wish_id: string
-  assigned_by: string
+  assigned_by: string | null // null means external assignment (someone outside the app)
   created_at: string
 }
 
@@ -60,6 +60,7 @@ export type WishWithAssignment = Wish & {
   assignment?: Assignment | null
   is_assigned: boolean
   assigned_by_me: boolean
+  is_external_assignment?: boolean // true when assigned_by is null
 }
 
 export type AssignmentWithWish = Assignment & {
