@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [unassigningWishId, setUnassigningWishId] = useState<string | null>(null)
   const [showAllAssignments, setShowAllAssignments] = useState(false)
   const [showAllSurprises, setShowAllSurprises] = useState(false)
+  const [isAssignedGiftsExpanded, setIsAssignedGiftsExpanded] = useState(false)
   const [unassignModal, setUnassignModal] = useState<{ isOpen: boolean; wishId: string | null; wishTitle: string }>({
     isOpen: false,
     wishId: null,
@@ -286,10 +287,19 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* My assigned gifts section - More compact with collapsible lists */}
+        {/* My assigned gifts section - Collapsible for privacy */}
         <Card className="mb-4 sm:mb-6">
-          <CardHeader className="py-2.5 px-3 sm:py-3 sm:px-4">
+          <CardHeader
+            className="py-2.5 px-3 sm:py-3 sm:px-4 cursor-pointer hover:bg-muted/50 transition-colors select-none"
+            onClick={() => setIsAssignedGiftsExpanded(!isAssignedGiftsExpanded)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setIsAssignedGiftsExpanded(!isAssignedGiftsExpanded)}
+          >
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <span className={`text-base sm:text-lg transition-transform duration-200 ${isAssignedGiftsExpanded ? 'rotate-0' : '-rotate-90'}`}>
+                ▼
+              </span>
               <span className="text-base sm:text-lg">🎁</span>
               <span>Mis regalos asignados</span>
               {(assignments.length > 0 || surpriseGifts.length > 0) && (
@@ -297,8 +307,14 @@ export default function DashboardPage() {
                   {assignments.length + surpriseGifts.length}
                 </Badge>
               )}
+              {!isAssignedGiftsExpanded && (
+                <span className="text-[10px] sm:text-xs text-muted ml-2">
+                  (toca para ver)
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
+          {isAssignedGiftsExpanded && (
           <CardContent className="py-2.5 px-3 sm:py-3 sm:px-4">
             {loadingAssignments ? (
               <EmptyState icon="⏳" message="Cargando regalos asignados..." />
@@ -466,6 +482,7 @@ export default function DashboardPage() {
               </div>
             )}
           </CardContent>
+          )}
         </Card>
 
         {/* Family members - Responsive grid layout */}
