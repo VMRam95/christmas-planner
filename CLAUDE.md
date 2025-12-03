@@ -309,11 +309,25 @@ import { cn } from '@/lib/utils'
 
 ---
 
+## Development Configuration
+
+**IMPORTANT:** El servidor de desarrollo debe ejecutarse en el puerto **9000** (no el 3000 por defecto).
+
+```bash
+# Iniciar servidor de desarrollo
+pnpm dev --port 9000
+
+# URL de desarrollo
+http://localhost:9000
+```
+
+---
+
 ## Commands
 
 ```bash
 # Development
-pnpm dev              # Start dev server
+pnpm dev --port 9000  # Start dev server on port 9000
 pnpm build            # Production build
 pnpm lint             # Run ESLint
 pnpm type-check       # TypeScript check
