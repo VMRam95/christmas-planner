@@ -1,4 +1,3 @@
-import emailjs from '@emailjs/browser'
 import { createServerClient } from '@/lib/supabase/server'
 import { createNewWishNotifications } from '@/lib/notifications'
 
@@ -98,24 +97,37 @@ export async function sendNewWishNotifications(
     // Build the wishlist link
     const wishlistLink = `${APP_URL}/family/${wishCreator.id}`
 
-    // Send emails to all eligible users
+    // Send emails to all eligible users using EmailJS REST API
+    // (REST API works server-side, unlike @emailjs/browser SDK)
     const sendPromises = usersToNotify.map(async (recipient) => {
       try {
-        await emailjs.send(
-          serviceId,
-          templateId,
-          {
-            to_name: recipient.name,
-            to_email: recipient.email,
-            creator_name: wishCreator.name,
-            gift_title: wish.title,
-            gift_description: wish.description || 'Sin descripcion',
-            gift_url: wish.url || '',
-            wishlist_link: wishlistLink,
-            app_url: APP_URL,
+        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          { publicKey }
-        )
+          body: JSON.stringify({
+            service_id: serviceId,
+            template_id: templateId,
+            user_id: publicKey,
+            template_params: {
+              to_name: recipient.name,
+              to_email: recipient.email,
+              creator_name: wishCreator.name,
+              gift_title: wish.title,
+              gift_description: wish.description || 'Sin descripcion',
+              gift_url: wish.url || '',
+              wishlist_link: wishlistLink,
+              app_url: APP_URL,
+            },
+          }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`EmailJS API error: ${response.status} - ${errorText}`)
+        }
+
         result.sentTo.push(recipient.email)
       } catch (err) {
         console.error(`Error sending notification to ${recipient.email}:`, err)
