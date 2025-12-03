@@ -34,6 +34,12 @@ export default function DashboardPage() {
     wishId: null,
     wishTitle: '',
   })
+  const [deleteSurpriseModal, setDeleteSurpriseModal] = useState<{ isOpen: boolean; giftId: string | null; giftTitle: string }>({
+    isOpen: false,
+    giftId: null,
+    giftTitle: '',
+  })
+  const [deletingSurpriseId, setDeletingSurpriseId] = useState<string | null>(null)
   const [createGiftModal, setCreateGiftModal] = useState(false)
 
   // Redirect if not authenticated
@@ -138,6 +144,45 @@ export default function DashboardPage() {
   const getRecipientName = (userId: string) => {
     const recipient = familyMembers.find((m) => m.id === userId)
     return recipient?.name || 'Desconocido'
+  }
+
+  // Open delete surprise modal
+  const openDeleteSurpriseModal = (giftId: string, giftTitle: string) => {
+    setDeleteSurpriseModal({ isOpen: true, giftId, giftTitle })
+  }
+
+  // Close delete surprise modal
+  const closeDeleteSurpriseModal = () => {
+    setDeleteSurpriseModal({ isOpen: false, giftId: null, giftTitle: '' })
+  }
+
+  // Handle delete surprise gift
+  const handleDeleteSurprise = async () => {
+    if (!deleteSurpriseModal.giftId) return
+
+    const giftId = deleteSurpriseModal.giftId
+
+    setDeletingSurpriseId(giftId)
+    try {
+      const response = await fetch(`/api/surprise-gifts?id=${giftId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setSurpriseGifts(surpriseGifts.filter((g) => g.id !== giftId))
+        showToast('Regalo sorpresa eliminado', 'success')
+        closeDeleteSurpriseModal()
+      } else {
+        showToast(data.error || 'Error al eliminar el regalo', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting surprise gift:', error)
+      showToast('Error al eliminar el regalo', 'error')
+    } finally {
+      setDeletingSurpriseId(null)
+    }
   }
 
   // Handle gift creation success
@@ -309,17 +354,24 @@ export default function DashboardPage() {
                               )}
                             </div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openUnassignModal(assignment.wish_id, assignment.wishes.title)}
-                            disabled={unassigningWishId === assignment.wish_id}
-                            className="shrink-0"
-                          >
-                            {unassigningWishId === assignment.wish_id
-                              ? 'Quitando...'
-                              : 'Quitar'}
-                          </Button>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Link
+                              href={`/family/${assignment.wishes.user_id}`}
+                              className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium px-2 py-1 rounded hover:bg-christmas-green/10 transition-colors"
+                            >
+                              Ver perfil
+                            </Link>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openUnassignModal(assignment.wish_id, assignment.wishes.title)}
+                              disabled={unassigningWishId === assignment.wish_id}
+                            >
+                              {unassigningWishId === assignment.wish_id
+                                ? 'Quitando...'
+                                : 'Quitar'}
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -375,6 +427,24 @@ export default function DashboardPage() {
                                 </a>
                               )}
                             </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Link
+                              href={`/family/${gift.recipient_id}`}
+                              className="text-xs text-christmas-green hover:text-christmas-green-dark font-medium px-2 py-1 rounded hover:bg-christmas-green/10 transition-colors"
+                            >
+                              Ver perfil
+                            </Link>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openDeleteSurpriseModal(gift.id, gift.title)}
+                              disabled={deletingSurpriseId === gift.id}
+                            >
+                              {deletingSurpriseId === gift.id
+                                ? 'Eliminando...'
+                                : 'Eliminar'}
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -451,6 +521,19 @@ export default function DashboardPage() {
         cancelText="Cancelar"
         variant="danger"
         loading={unassigningWishId !== null}
+      />
+
+      {/* Delete surprise gift modal */}
+      <ConfirmModal
+        isOpen={deleteSurpriseModal.isOpen}
+        onClose={closeDeleteSurpriseModal}
+        onConfirm={handleDeleteSurprise}
+        title="Eliminar regalo sorpresa"
+        message={`¿Estás seguro de que quieres eliminar "${deleteSurpriseModal.giftTitle}"?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={deletingSurpriseId !== null}
       />
 
       {/* Create gift modal */}
