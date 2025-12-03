@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import emailjs from '@emailjs/browser'
 import { useAuth } from '@/hooks/useAuth'
 import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -43,6 +44,14 @@ export default function AdminPage() {
   const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null)
   const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null)
   const [editAvatarUrl, setEditAvatarUrl] = useState<string | null>(null)
+  const [inviteModal, setInviteModal] = useState<{ isOpen: boolean; user: User | null }>({
+    isOpen: false,
+    user: null,
+  })
+  const [sendingInvite, setSendingInvite] = useState(false)
+
+  // App URL (placeholder for Vercel deployment)
+  const APP_URL = 'https://christmas-planner.vercel.app'
 
   // Check if current user is admin
   const isAdmin = user?.email === ADMIN_EMAIL
@@ -299,6 +308,178 @@ export default function AdminPage() {
     setDeleteModal({ isOpen: false, user: null })
   }
 
+  // Open invite modal
+  const openInviteModal = (familyUser: User) => {
+    setInviteModal({ isOpen: true, user: familyUser })
+  }
+
+  // Close invite modal
+  const closeInviteModal = () => {
+    setInviteModal({ isOpen: false, user: null })
+  }
+
+  // Copy email text to clipboard
+  const copyEmailToClipboard = () => {
+    if (!inviteModal.user) return
+    const emailText = getInviteEmailText(inviteModal.user)
+    navigator.clipboard.writeText(emailText)
+    showToast('Texto copiado al portapapeles', 'success')
+  }
+
+  // Send invite email via EmailJS
+  const handleSendInvite = async () => {
+    if (!inviteModal.user) return
+
+    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID
+    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+
+    if (!serviceId || !templateId || !publicKey) {
+      showToast('Error: EmailJS no está configurado', 'error')
+      return
+    }
+
+    setSendingInvite(true)
+    try {
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          to_name: inviteModal.user.name,
+          to_email: inviteModal.user.email,
+          app_url: APP_URL,
+        },
+        publicKey
+      )
+
+      showToast(`Invitación enviada a ${inviteModal.user.email}`, 'success')
+      closeInviteModal()
+    } catch (err) {
+      console.error('Error sending invite:', err)
+      showToast('Error al enviar la invitación', 'error')
+    } finally {
+      setSendingInvite(false)
+    }
+  }
+
+  // Generate invite email text (plain text for clipboard)
+  const getInviteEmailText = (familyUser: User) => {
+    return `¡Hola ${familyUser.name}!
+
+Has sido invitado/a a participar en el Christmas Planner de la familia.
+
+En esta aplicación podrás:
+- Crear tu carta de deseos navideños
+- Ver las cartas de otros miembros de la familia
+- Asignarte regalos para que nadie repita
+
+Para acceder, simplemente entra en:
+${APP_URL}
+
+E inicia sesión con tu email: ${familyUser.email}
+
+¡Felices fiestas! 🎄🎁`
+  }
+
+  // Generate invite email HTML preview component
+  const InviteEmailPreview = ({ familyUser }: { familyUser: User }) => (
+    <div className="bg-gray-100 p-4 rounded-lg">
+      {/* Email client header simulation */}
+      <div className="bg-white rounded-t-lg border border-gray-200 px-4 py-3 flex items-center gap-3">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-red-400" />
+          <div className="w-3 h-3 rounded-full bg-yellow-400" />
+          <div className="w-3 h-3 rounded-full bg-green-400" />
+        </div>
+        <div className="flex-1 text-center text-xs text-gray-500">
+          Vista previa del email
+        </div>
+      </div>
+
+      {/* Email header */}
+      <div className="bg-white border-x border-gray-200 px-4 py-3 space-y-1">
+        <div className="flex items-center text-sm">
+          <span className="text-gray-500 w-16">De:</span>
+          <span className="text-gray-800">Christmas Planner &lt;noreply@christmas-planner.app&gt;</span>
+        </div>
+        <div className="flex items-center text-sm">
+          <span className="text-gray-500 w-16">Para:</span>
+          <span className="text-gray-800">{familyUser.name} &lt;{familyUser.email}&gt;</span>
+        </div>
+        <div className="flex items-center text-sm">
+          <span className="text-gray-500 w-16">Asunto:</span>
+          <span className="text-gray-800 font-medium">🎄 ¡Has sido invitado al Christmas Planner!</span>
+        </div>
+      </div>
+
+      {/* Email body */}
+      <div className="bg-white rounded-b-lg border border-t-0 border-gray-200 overflow-hidden">
+        {/* Christmas header banner */}
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-8 text-center">
+          <div className="text-5xl mb-2">🎄</div>
+          <h1 className="text-2xl font-bold text-white">Christmas Planner</h1>
+          <p className="text-red-100 text-sm mt-1">La app para organizar los regalos de la familia</p>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-6">
+          <p className="text-gray-800 text-lg mb-4">
+            ¡Hola <strong>{familyUser.name}</strong>! 👋
+          </p>
+
+          <p className="text-gray-600 mb-4">
+            Has sido invitado/a a participar en el <strong>Christmas Planner</strong> de la familia.
+          </p>
+
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <p className="text-green-800 font-medium mb-2">Con esta aplicación podrás:</p>
+            <ul className="text-green-700 space-y-1">
+              <li className="flex items-center gap-2">
+                <span>📝</span> Crear tu carta de deseos navideños
+              </li>
+              <li className="flex items-center gap-2">
+                <span>👀</span> Ver las cartas de otros miembros de la familia
+              </li>
+              <li className="flex items-center gap-2">
+                <span>🎁</span> Asignarte regalos para que nadie repita
+              </li>
+            </ul>
+          </div>
+
+          {/* CTA Button */}
+          <div className="text-center mb-6">
+            <div className="inline-block bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg">
+              Acceder a Christmas Planner
+            </div>
+            <p className="text-xs text-gray-400 mt-2 break-all">{APP_URL}</p>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+            <p className="text-gray-600 text-sm">
+              <strong>📧 Tu email de acceso:</strong>
+            </p>
+            <p className="text-gray-800 font-mono bg-white px-3 py-2 rounded border mt-2">
+              {familyUser.email}
+            </p>
+          </div>
+
+          <p className="text-gray-500 text-sm text-center">
+            Solo tienes que introducir tu email para entrar, ¡sin contraseña!
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 text-center">
+          <p className="text-2xl mb-2">🎄🎁🎅</p>
+          <p className="text-gray-600 font-medium">¡Felices Fiestas!</p>
+          <p className="text-gray-400 text-xs mt-2">
+            Este email fue enviado desde Christmas Planner
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+
   // Delete user (called after modal confirmation)
   const handleDeleteUser = async () => {
     if (!deleteModal.user) return
@@ -515,22 +696,16 @@ export default function AdminPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                      {/* Invite button (visual only) */}
-                      <div className="relative group">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={actionLoading}
-                          className="text-christmas-green hover:text-christmas-green-dark hover:bg-christmas-green/10"
-                        >
-                          📧 Invitar
-                        </Button>
-                        {/* Tooltip */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          Próximamente: enviar invitación por email
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-                        </div>
-                      </div>
+                      {/* Invite button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openInviteModal(familyUser)}
+                        disabled={actionLoading}
+                        className="text-christmas-green hover:text-christmas-green-dark hover:bg-christmas-green/10"
+                      >
+                        📧 Invitar
+                      </Button>
 
                       {/* Edit button */}
                       <Button
@@ -679,6 +854,56 @@ export default function AdminPage() {
         variant="danger"
         loading={actionLoading}
       />
+
+      {/* Invite email preview modal */}
+      <Modal
+        isOpen={inviteModal.isOpen}
+        onClose={closeInviteModal}
+        title="📧 Invitar a la familia"
+        size="lg"
+        preventClose={sendingInvite}
+      >
+        <div className="px-6 py-4">
+          {inviteModal.user && (
+            <>
+              <p className="text-sm text-muted mb-4">
+                Así se vería el email de invitación para <strong>{inviteModal.user.name}</strong>:
+              </p>
+
+              {/* HTML Email preview */}
+              <div className="max-h-[60vh] overflow-y-auto">
+                <InviteEmailPreview familyUser={inviteModal.user} />
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="px-6 py-4 border-t border-border flex justify-between">
+          <Button
+            variant="outline"
+            onClick={copyEmailToClipboard}
+            disabled={sendingInvite}
+          >
+            📋 Copiar texto
+          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={closeInviteModal}
+              disabled={sendingInvite}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSendInvite}
+              disabled={sendingInvite}
+            >
+              {sendingInvite ? 'Enviando...' : '📧 Enviar email'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
