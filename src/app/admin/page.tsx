@@ -349,7 +349,7 @@ export default function AdminPage() {
           to_email: inviteModal.user.email,
           app_url: APP_URL,
         },
-        publicKey
+        { publicKey }
       )
 
       showToast(`Invitación enviada a ${inviteModal.user.email}`, 'success')
