@@ -1,9 +1,10 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { createNewWishNotifications } from '@/lib/notifications'
+import { sendEmail, sendEmailBatch } from './client'
 
 import type { User, Wish } from '@/types'
 
-const APP_URL = 'https://christmas-planner.vercel.app'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://christmas-planner.vercel.app'
 
 type NotificationResult = {
   success: boolean
@@ -34,20 +35,17 @@ export async function sendNewWishNotifications(
     if (!dbResult.success) {
       console.warn('Some DB notifications failed:', dbResult)
     }
-    // Get EmailJS config
-    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.trim()
-    const templateId = process.env.NEXT_PUBLIC_EMAILJS_NOTIFICATION_TEMPLATE_ID?.trim()
-    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY?.trim()
 
-    if (!serviceId || !templateId || !publicKey) {
-      console.warn('EmailJS notification template not configured, skipping notifications')
-      result.errors.push('EmailJS not configured')
+    // Check if email service is configured
+    if (!process.env.EMAIL_SERVICE_API_KEY) {
+      console.warn('EMAIL_SERVICE_API_KEY not configured, skipping email notifications')
+      result.errors.push('Email service not configured')
       return result
     }
 
     const supabase = createServerClient()
 
-    // Get all users except the wish creator who have notifications enabled
+    // Get all users except the wish creator
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, email, name')
@@ -97,47 +95,29 @@ export async function sendNewWishNotifications(
     // Build the wishlist link
     const wishlistLink = `${APP_URL}/family/${wishCreator.id}`
 
-    // Send emails to all eligible users using EmailJS REST API
-    // (REST API works server-side, unlike @emailjs/browser SDK)
-    const sendPromises = usersToNotify.map(async (recipient) => {
-      try {
-        const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            service_id: serviceId,
-            template_id: templateId,
-            user_id: publicKey,
-            template_params: {
-              to_name: recipient.name,
-              to_email: recipient.email,
-              creator_name: wishCreator.name,
-              gift_title: wish.title,
-              gift_description: wish.description || 'Sin descripcion',
-              gift_url: wish.url || '',
-              wishlist_link: wishlistLink,
-              app_url: APP_URL,
-            },
-          }),
-        })
+    // Send emails using the email service
+    const batchResult = await sendEmailBatch(
+      usersToNotify.map((user) => ({
+        email: user.email,
+        data: {
+          to_name: user.name,
+          creator_name: wishCreator.name,
+          gift_title: wish.title,
+          gift_description: wish.description || '',
+          gift_url: wish.url || '',
+          wishlist_link: wishlistLink,
+          app_url: APP_URL,
+        },
+      })),
+      'christmas-planner/gift-added'
+    )
 
-        if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`EmailJS API error: ${response.status} - ${errorText}`)
-        }
+    result.sentTo = usersToNotify
+      .filter((_, i) => !batchResult.errors[i])
+      .map((u) => u.email)
+    result.errors.push(...batchResult.errors)
 
-        result.sentTo.push(recipient.email)
-      } catch (err) {
-        console.error(`Error sending notification to ${recipient.email}:`, err)
-        result.errors.push(`Failed to send to ${recipient.email}`)
-      }
-    })
-
-    await Promise.all(sendPromises)
-
-    if (result.errors.length > 0 && result.sentTo.length === 0) {
+    if (batchResult.failed > 0 && batchResult.sent === 0) {
       result.success = false
     }
 
@@ -148,4 +128,60 @@ export async function sendNewWishNotifications(
     result.errors.push('Unexpected error')
     return result
   }
+}
+
+/**
+ * Send notification when someone assigns themselves to a gift
+ */
+export async function sendGiftAssignedNotification(
+  giftOwner: User,
+  wish: Wish,
+  assigneeName: string
+): Promise<{ success: boolean; error?: string }> {
+  // Check if email service is configured
+  if (!process.env.EMAIL_SERVICE_API_KEY) {
+    return { success: false, error: 'Email service not configured' }
+  }
+
+  const emailResult = await sendEmail({
+    to: giftOwner.email,
+    template: 'christmas-planner/gift-assigned',
+    data: {
+      to_name: giftOwner.name,
+      assignee_name: assigneeName,
+      gift_title: wish.title,
+      gift_description: wish.description || '',
+      app_url: APP_URL,
+    },
+  })
+
+  return emailResult
+}
+
+/**
+ * Send reminder notification before Christmas
+ */
+export async function sendChristmasReminder(
+  user: User,
+  daysLeft: number,
+  pendingGifts: number,
+  unassignedWishes: number
+): Promise<{ success: boolean; error?: string }> {
+  if (!process.env.EMAIL_SERVICE_API_KEY) {
+    return { success: false, error: 'Email service not configured' }
+  }
+
+  const emailResult = await sendEmail({
+    to: user.email,
+    template: 'christmas-planner/reminder',
+    data: {
+      to_name: user.name,
+      days_left: daysLeft,
+      pending_gifts: pendingGifts > 0 ? pendingGifts : undefined,
+      unassigned_wishes: unassignedWishes > 0 ? unassignedWishes : undefined,
+      app_url: APP_URL,
+    },
+  })
+
+  return emailResult
 }
