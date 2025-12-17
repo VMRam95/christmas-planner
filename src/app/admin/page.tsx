@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import emailjs from '@emailjs/browser'
 import { useAuth } from '@/hooks/useAuth'
 import { Header } from '@/components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -326,34 +325,29 @@ export default function AdminPage() {
     showToast('Texto copiado al portapapeles', 'success')
   }
 
-  // Send invite email via EmailJS
+  // Send invite email via email-service API
   const handleSendInvite = async () => {
     if (!inviteModal.user) return
 
-    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID?.trim()
-    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID?.trim()
-    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY?.trim()
-
-    if (!serviceId || !templateId || !publicKey) {
-      showToast('Error: EmailJS no está configurado', 'error')
-      return
-    }
-
     setSendingInvite(true)
     try {
-      await emailjs.send(
-        serviceId,
-        templateId,
-        {
-          to_name: inviteModal.user.name,
-          to_email: inviteModal.user.email,
-          app_url: APP_URL,
-        },
-        { publicKey }
-      )
+      const response = await fetch('/api/admin/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: inviteModal.user.name,
+          email: inviteModal.user.email,
+        }),
+      })
 
-      showToast(`Invitación enviada a ${inviteModal.user.email}`, 'success')
-      closeInviteModal()
+      const data = await response.json()
+
+      if (data.success) {
+        showToast(`Invitación enviada a ${inviteModal.user.email}`, 'success')
+        closeInviteModal()
+      } else {
+        showToast(data.error || 'Error al enviar la invitación', 'error')
+      }
     } catch (err) {
       console.error('Error sending invite:', err)
       showToast('Error al enviar la invitación', 'error')
