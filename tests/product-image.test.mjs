@@ -79,7 +79,11 @@ test('pins validated DNS, checks redirects and image destinations, and bounds re
       responses.push({ headers: { 'content-type': 'image/svg+xml' }, body: '<svg/>' })
       await assert.rejects(loadProductImage('https://shop.example/product', signal), /Unsupported response/)
       responses.push({ body: Buffer.alloc(2 * 1024 * 1024 + 1) })
+      assert.equal(await loadProductImage('https://shop.example/product', signal), null)
+      responses.push({ headers: { 'content-type': 'image/png' }, body: Buffer.alloc(2 * 1024 * 1024 + 1) })
       await assert.rejects(loadProductImage('https://shop.example/product', signal), /Resource too large/)
+      responses.push({ headers: { 'content-type': 'text/html', 'content-length': '3000000' }, body: '<meta property="og:image" content="/image.png">' + ' '.repeat(2 * 1024 * 1024) }, { headers: { 'content-type': 'image/png' }, body: Buffer.from([137, 80, 78, 71]) })
+      assert.equal((await loadProductImage('https://shop.example/product', signal)).body.length, 4)
       await assert.rejects(loadProductImage('https://shop.example/product', AbortSignal.abort()))
     })
   } finally { mock.restoreAll(); syncBuiltinESMExports() }

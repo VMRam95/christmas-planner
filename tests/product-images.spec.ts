@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 import { writeFile } from 'node:fs/promises'
 
 // Run against the isolated local family seeded by scripts/seed-local.mjs.
-const product = 'https://es.creative.com/p/speakers/creative-pebble-pro'
+const product = process.env.PRODUCT_IMAGE_TEST_URL || 'https://es.creative.com/p/speakers/creative-pebble-pro'
 const title = 'CREATIVE Pebble Pro 2.0 Altavoces USB-C con Bluetooth e iluminación RGB'
 const password = 'Local-test-password-2026!'
 test.use({ hasTouch: true })

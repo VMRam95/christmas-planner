@@ -124,7 +124,7 @@ async function readPublicResource(value: string, signal: AbortSignal, maxBytes: 
         const type = res.headers['content-type']?.split(';')[0].trim().toLowerCase() ?? ''
         const isImage = /^image\/(jpeg|png|webp|gif|avif)$/.test(type)
         if (status !== 200 || (!isImage && (imageOnly || !['text/html', 'application/xhtml+xml'].includes(type))) ||
-            Number(res.headers['content-length']) > maxBytes || (res.headers['content-encoding'] && res.headers['content-encoding'] !== 'identity')) {
+            (isImage && Number(res.headers['content-length']) > maxBytes) || (res.headers['content-encoding'] && res.headers['content-encoding'] !== 'identity')) {
           res.destroy()
           reject(new Error('Unsupported response'))
           return
@@ -133,7 +133,13 @@ async function readPublicResource(value: string, signal: AbortSignal, maxBytes: 
         let bytes = 0
         res.on('data', (chunk: Buffer) => {
           bytes += chunk.length
-          if (bytes > maxBytes) res.destroy(new Error('Resource too large'))
+          if (bytes > maxBytes && !isImage) {
+            // Large stores can send megabytes of unrelated scripts after their metadata.
+            // Read only the bounded HTML prefix, then close the connection.
+            chunks.push(chunk.subarray(0, maxBytes - (bytes - chunk.length)))
+            resolve({ body: Buffer.concat(chunks), type, url: url.href })
+            res.destroy()
+          } else if (bytes > maxBytes) res.destroy(new Error('Resource too large'))
           else chunks.push(chunk)
         })
         res.on('error', reject)
