@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ProductImage } from './ProductImage'
 import { PRIORITY_LABELS, PRIORITY_COLORS } from '@/types'
 
 import type { Wish, WishWithAssignment, SurpriseGift } from '@/types'
@@ -50,11 +51,12 @@ export function GiftCard({
 
   return (
     <div className={`bg-white rounded-lg border border-border p-4 transition-shadow ${disabled ? 'opacity-60' : 'hover:shadow-sm'}`}>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start gap-3">
+        {gift.url && <ProductImage key={gift.url} url={gift.url} title={gift.title} />}
         <div className="flex-1 min-w-0">
           {/* Title */}
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className={`font-medium text-foreground truncate ${disabled ? 'line-through text-muted' : ''}`}>{gift.title}</h3>
+            <h3 className={`font-medium text-foreground break-words [overflow-wrap:anywhere] ${disabled ? 'line-through text-muted' : ''}`}>{gift.title}</h3>
 
             {/* Priority badge (wishes only) */}
             {showPriority && 'priority' in gift && (
@@ -106,7 +108,7 @@ export function GiftCard({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex w-full flex-wrap items-center justify-end gap-1 sm:w-auto sm:shrink-0">
           {/* Owner actions (edit/delete) */}
           {isOwner && (onEdit || onDelete) && (
             <>

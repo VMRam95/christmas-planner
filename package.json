@@ -8,10 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/validation.test.mjs tests/email.test.mjs",
+    "test": "node --experimental-strip-types --test tests/validation.test.mjs tests/email.test.mjs tests/product-image.test.mjs",
     "test:e2e": "playwright test",
     "seed:local": "node --env-file=.env.local scripts/seed-local.mjs",
-    "test:db": "node --env-file=.env.local --test tests/database.test.mjs"
+    "test:db": "node --env-file=.env.local --test tests/database.test.mjs",
+    "test:product-images": "node --experimental-strip-types --test tests/product-image.test.mjs",
+    "test:product-images:e2e": "playwright test --config playwright.product-images.config.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
