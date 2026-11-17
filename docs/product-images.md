@@ -157,3 +157,44 @@ Baúl: perfil y memoria versionados; INDEX y espejos generados se conservan loca
 para poder actualizar el estado del Kanban sin generar publicaciones de producto
 por cada captura del estado. El cierre se reconcilia con la tarjeta 5830 y se ejecuta
 `baul.py update` desde el checkout principal.
+
+## Regresión de Amazon en Vercel — CAS 5841, 17/11/2026
+
+La prueba local anterior no acreditaba la respuesta de Amazon desde el servidor
+alojado. Se reprodujo el fallo con los dos productos comunicados: JOYROOM
+B0G3N54XSC y CREATIVE B0DXW25R3D. Desde Vercel, Node 24 en iad1, la ficha de
+escritorio devuelve 503 aunque el CDN de imágenes responde 200. La ficha móvil
+pública `/gp/aw/d/ASIN` devuelve metadatos e imagen válidos para ambos.
+
+El extractor normaliza solo las fichas de dominios Amazon reconocidos, tanto
+URLs directas como destinos de enlaces cortos. Conserva el enlace original del
+deseo, el User-Agent honesto y las comprobaciones de DNS, conexión fijada,
+redirecciones, formato, tamaño y plazo total. No incorpora fotos prefijadas por
+producto. Los errores del endpoint llevan `no-store`; las imágenes correctas
+mantienen caché privada. El componente usa `v=2` para evitar los 404 anteriores
+que el navegador podía conservar durante una hora. Ayuda y novedades actualizadas.
+
+La misma función de producto se ejecutó en una preview temporal del proyecto
+Vercel, con únicamente dos enlaces públicos fijos y sin leer cartas ni modificar
+Auth, datos o SMTP alojados. Resultado: JOYROOM JPEG de 143.907 bytes en 1.284 ms;
+CREATIVE JPEG de 53.717 bytes en 1.182 ms. Evidencias de antes/después en
+`artifacts/amazon-images-5841/cloud-{baseline,fixed}-{joyroom,creative}.json`.
+Las fotos se abrieron e inspeccionaron.
+
+Validación: 15 unitarias, 4 DB, 15 E2E, cero skips; types, lint y build con exit 0.
+Tres avisos previos de lint. Stack sintético aislado `christmas-planner-amazon-5841`.
+La E2E nueva carga ambos productos en la carta real, comprueba `naturalWidth`
+y la versión de caché, y captura 1440 y 390 px. La regresión conserva CRUD,
+cartas familiares, sorpresas, privacidad, carga y fallo, teclado y tacto emulado,
+y anchos 320/390/768/1024/1440. Capturas nuevas inspeccionadas:
+[escritorio](../artifacts/amazon-images-5841/amazon-wishes-1440.png) y
+[móvil](../artifacts/amazon-images-5841/amazon-wishes-390.png). Redimensionado y
+comprobación local: 31–74 ms; no representa INP de campo. Sin dispositivo físico
+ni certificación de lector de pantalla. Resumen y hashes del código probado:
+`artifacts/amazon-images-5841/validation-summary.json`.
+
+Registro privado de recursos: `artifacts/amazon-images-5841/local-resources.json`.
+La preview de diagnóstico es temporal y nunca se promueve a producción. La CLI de
+Vercel creó una credencial de acceso a previews al usar `curl`; su identidad se
+registró de forma privada para revocar solo esa credencial durante el cierre.
+PR, publicación, comprobación final y recibo de limpieza se añaden al cerrar.

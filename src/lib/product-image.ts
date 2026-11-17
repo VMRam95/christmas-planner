@@ -92,11 +92,21 @@ export function extractProductImage(html: string, pageUrl: string): string | nul
 
 type Resource = { body: Buffer; type: string; url: string }
 
+function amazonPreviewUrl(url: URL): URL {
+  if (!/^(?:www\.|m\.|smile\.)?amazon\.(?:com|es|de|fr|it|co\.uk|ca|co\.jp|com\.au|in|nl|se|pl|com\.be|com\.br|com\.mx|sg|ae|sa|com\.tr)$/i.test(url.hostname)) return url
+  const asin = url.pathname.match(/\/(?:dp|gp\/(?:product|aw\/d))\/([a-z0-9]{10})(?:\/|$)/i)?.[1]
+  if (!asin) return url
+  // Amazon's public mobile product page serves image metadata to hosted previews
+  // where the desktop product route responds with 503. Keep the visitor's link intact.
+  return new URL(`/gp/aw/d/${asin.toUpperCase()}`, `https://${url.hostname}`)
+}
+
 // DNS is checked once and pinned to the socket, including every redirect and the image.
 async function readPublicResource(value: string, signal: AbortSignal, maxBytes: number, imageOnly = false): Promise<Resource> {
   let url = productUrl(value)
   for (let redirects = 0; redirects <= 3; redirects++) {
     signal.throwIfAborted()
+    if (!imageOnly) url = amazonPreviewUrl(url)
     const hostname = url.hostname.replace(/^\[|\]$/g, '')
     const addresses = await new Promise<LookupAddress[]>((resolve, reject) => {
       const abort = () => reject(signal.reason)

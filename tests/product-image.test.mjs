@@ -73,6 +73,27 @@ test('pins validated DNS, checks redirects and image destinations, and bounds re
       responses.push({ body: '<meta property="og:image" content="https://private.example/image.png">' })
       await assert.rejects(loadProductImage('https://shop.example/product', signal), /Private address/)
     })
+    await t.test('Amazon short links resolve to public mobile metadata instead of the unavailable desktop route', async () => {
+      const before = calls.length
+      responses.push({ status: 301, headers: { location: 'https://www.amazon.es/product-title/dp/B0G3N54XSC/ref=share?tag=example' } }, { body: '<meta property="og:image" content="https://m.media-amazon.com/images/I/product.jpg">' }, { headers: { 'content-type': 'image/jpeg' }, body: Buffer.from([255, 216, 255]) })
+      const image = await loadProductImage('https://amzn.eu/d/example', signal)
+      assert.equal(image.type, 'image/jpeg')
+      assert.deepEqual(calls.slice(before), ['https://amzn.eu/d/example', 'https://www.amazon.es/gp/aw/d/B0G3N54XSC', 'https://m.media-amazon.com/images/I/product.jpg'])
+    })
+    await t.test('direct Amazon links normalize safely while other hosts remain unchanged', async () => {
+      for (const [input, expected] of [
+        ['https://www.amazon.es/gp/product/b0dxw25r3d?th=1', 'https://www.amazon.es/gp/aw/d/B0DXW25R3D'],
+        ['https://amazon.co.uk/dp/B0DXW25R3D', 'https://amazon.co.uk/gp/aw/d/B0DXW25R3D'],
+        ['https://www.amazon.es/gp/aw/d/B0DXW25R3D', 'https://www.amazon.es/gp/aw/d/B0DXW25R3D'],
+        ['https://www.amazon.es.evil.example/dp/B0DXW25R3D?x=1', 'https://www.amazon.es.evil.example/dp/B0DXW25R3D?x=1'],
+        ['https://shop.example/dp/B0DXW25R3D', 'https://shop.example/dp/B0DXW25R3D'],
+      ]) {
+        const before = calls.length
+        responses.push({ body: '<h1>No product metadata</h1>' })
+        assert.equal(await loadProductImage(input, signal), null)
+        assert.equal(calls[before], expected)
+      }
+    })
     await t.test('missing image, SVG, large body and aborted requests', async () => {
       responses.push({ body: '<h1>No image</h1>' })
       assert.equal(await loadProductImage('https://shop.example/product', signal), null)

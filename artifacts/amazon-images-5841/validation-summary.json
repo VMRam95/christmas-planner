@@ -1,0 +1,79 @@
+{
+  "task": 5841,
+  "base": "52ac0b22e653a22d557fee009f0c4a53cc16ba90",
+  "source_sha256": {
+    "src/lib/product-image.ts": "394f4a66c23aa6070834bf98e6a6823a2e6c484301ecd80a918a3ec39ff93dce",
+    "src/app/api/product-image/route.ts": "8b3313ef662913656aa32e513f50bec0e22540cbcf9270b4ec062bd0ac58219e",
+    "src/components/gifts/ProductImage.tsx": "2eca793b0cc5efb1048b39f11978c72e6689002db82bbd23df0a662c4e85cd92",
+    "src/app/help/page.tsx": "7d35f790de0ec2066c3ac9363dc2119a0264bdc1cf5ad63589af25e0e34a0178",
+    "tests/product-image.test.mjs": "c5fce2e8989e7fa4f88c0dc34ba4e12966ec48f2025ee1a41921944edcc4f7be",
+    "tests/product-images.spec.ts": "e85df68113789e2c86d98b695a043b482a22e789d041a500e20eda195203baed"
+  },
+  "checks": {
+    "unit": {
+      "exit": 0,
+      "passed": 15,
+      "skipped": 0
+    },
+    "database": {
+      "exit": 0,
+      "passed": 4,
+      "skipped": 0
+    },
+    "e2e": {
+      "exit": 0,
+      "passed": 15,
+      "skipped": 0,
+      "duration": "1.1m",
+      "browser": "headless Chromium with touch enabled"
+    },
+    "typecheck": {
+      "exit": 0
+    },
+    "lint": {
+      "exit": 0,
+      "existing_warnings": 3
+    },
+    "build": {
+      "exit": 0
+    },
+    "help_production_build": {
+      "exit": 0,
+      "initial_attempt": "Server startup race; verified ready before successful retry"
+    }
+  },
+  "cloud": {
+    "baseline": "Amazon desktop 503 from Vercel Node24 iad1; CDN directly accessible",
+    "fixed": "Exact source, public mobile product metadata; both original short links return JPEG",
+    "joyroom": {
+      "bytes": 143907,
+      "ms": 1284
+    },
+    "creative": {
+      "bytes": 53717,
+      "ms": 1182
+    },
+    "production_auth_or_data_mutations": false
+  },
+  "ui": {
+    "viewports": [
+      320,
+      390,
+      768,
+      1024,
+      1440
+    ],
+    "inspected_screenshots": [
+      "amazon-wishes-1440.png",
+      "amazon-wishes-390.png"
+    ],
+    "resize_check_ms": [
+      31,
+      74
+    ],
+    "limitations": "Emulation only; no physical handset or screen-reader certification; timings are not field INP"
+  },
+  "delivery": {
+    "status": "validated locally and in hosted fixed-product probe; PR and production verification pending"
+  }
+}
