@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "project": "christmas-planner",
+  "sources": {
+    "repos": {
+      "adapter": "git",
+      "required": true,
+      "repos": [
+        "."
+      ]
+    },
+    "kanban": {
+      "adapter": "cas-kanban",
+      "required": true,
+      "project": "christmas-planner",
+      "reconcile": "tarjetas tocadas por el trabajo: plan, implementación y estado reales"
+    }
+  }
+}

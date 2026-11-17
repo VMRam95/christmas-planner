@@ -1,0 +1,4 @@
+# Connected-source mirrors remain local; publish only the profile and project memory.
+/_refresh/
+/kanban/
+/repos/
