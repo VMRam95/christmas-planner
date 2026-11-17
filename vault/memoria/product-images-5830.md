@@ -1,26 +1,27 @@
 # Imágenes de productos · CAS 5830
 
-La renovación de producción seguía sin commit en el carril histórico. El usuario
-ordenó «incluye todo» el 17/11/2026. Se conserva en 9e08513; el original no se toca.
-Corrección de recuperación 69ad22f; imágenes 4a2869b y corrección de HTML grande b07cf1d. Rama cas/christmas-planner-2,
-base main. Sin autorización de merge o despliegue.
+Estado: entrega aprobada, PR [#1](https://github.com/VMRam95/christmas-planner/pull/1)
+fusionada a main y producto publicado en https://christmas-planner.vercel.app.
+No existe develop. El usuario ordenó expresamente el merge, despliegue,
+actualización del baúl y limpieza el 17/11/2026.
 
-La imagen se extrae del enlace para los deseos nuevos y existentes sin migrar datos.
-Tarjetas propias, familiares y sorpresas usan el mismo componente. Fallback
-«Sin imagen» si la tienda bloquea la extracción. Endpoint autenticado con controles
-DNS/redirecciones, límite de tamaño y plazo total de ocho segundos.
+Renovación anterior preservada en 9e08513; recuperación 69ad22f; imágenes 4a2869b
+y lectura acotada de HTML grande b07cf1d. Merge de producto 4cb0838. El original
+histórico permanece intacto. Vercel Ready verificado:
+dpl_HXamTfdMTwGK1YdTeMpoEmYsy7Am. Rollback anterior:
+dpl_89Sbs1vpYe3YD1RFXx9JpUq6qbcK. El recibo vivo tras los commits de documentación
+queda en artifacts/product-images-5830/production-current.json.
 
-Validación conjunta: 13 unitarios, 4 DB, 14 E2E sin skips, types/lint/build exit 0;
-tres avisos previos de lint. Capturas móvil/escritorio/familiar/carga/fallo abiertas.
-Dos primeras ejecuciones E2E fallaron: defecto de redirección de recuperación y
-carrera del test al cerrar avisos; ambos corregidos y logs conservados.
+Imágenes a partir del enlace, incluidas cartas existentes, sin migración.
+Validación con el enlace Amazon original: 13 unitarios, 4 DB y 14 E2E sin skips,
+types/lint/build exit 0; tres avisos previos. Capturas locales inspeccionadas.
+Smoke público de producción: nueve comprobaciones, desktop/móvil, cero errores JS.
+Cobertura autenticada de imágenes en local con idéntico código; no se han modificado
+cuentas, datos, permisos o correo de producción para probar.
 
-Fuente canónica: [docs/product-images.md](../../docs/product-images.md).
-Pruebas y capturas: artifacts/product-images-5830/. Instrucciones: AGENTS.md.
-Limpieza verificada: dos procesos y seis contenedores propios cerrados; cachés
-retiradas, 1,13 GiB liberados. Datos sintéticos, configuración privada y worktree
-CAS conservados. PR [#1](https://github.com/VMRam95/christmas-planner/pull/1) abierta contra main.
-Validación final b07cf1d con el enlace corto de Amazon del deseo real: 14/14 E2E,
-13 unitarios, 4 DB, types/lint/build exit 0. Foto real en capturas finales
-inspeccionadas. La segunda generación de recursos también está cerrada.
-Pendiente únicamente revisión del usuario y autorización de merge/despliegue.
+Recursos propios cerrados, incluido el navegador headless de producción. Cachés
+retiradas; datos sintéticos, configuración privada y evidencias conservadas.
+Worktrees CAS retenidos por locks gestionados por Desktop. Fuente canónica:
+[docs/product-images.md](../../docs/product-images.md), enlazada desde AGENTS.md.
+El estado del Kanban se captura con baul.py update; no repetir limpiezas ni envíos
+históricos de la campaña familiar.

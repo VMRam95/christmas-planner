@@ -1,0 +1,47 @@
+{
+  "environment": "production",
+  "source_commit": "4cb083805cabde660e07c7be20631af98a5a18e7",
+  "deployment": "dpl_HXamTfdMTwGK1YdTeMpoEmYsy7Am",
+  "checks": [
+    {
+      "case": "public login",
+      "status": 200
+    },
+    {
+      "case": "/api/users anonymous rejection",
+      "status": 401
+    },
+    {
+      "case": "/api/wishes anonymous rejection",
+      "status": 401
+    },
+    {
+      "case": "/api/product-image anonymous rejection",
+      "status": 401
+    },
+    {
+      "case": "anonymous session",
+      "status": 200,
+      "user": null
+    },
+    {
+      "case": "cross-origin mutation rejection",
+      "status": 403
+    },
+    {
+      "case": "recovery rejects invalid type; relative redirect",
+      "status": 307
+    },
+    {
+      "case": "new image guide rendered; no horizontal overflow",
+      "viewport": 1440
+    },
+    {
+      "case": "new image guide rendered; no horizontal overflow",
+      "viewport": 390
+    }
+  ],
+  "authenticated_data_flow": "Covered locally on identical product source; production family data and Auth unchanged.",
+  "page_errors": [],
+  "result": "passed"
+}

@@ -2,7 +2,8 @@
 
 Encargo: refrescar el baúl y mostrar la imagen del producto a partir del enlace en
 Mis deseos. El 17/11/2026 el usuario ordenó incluir también la renovación publicada
-que seguía sin commit. No hay autorización de merge o despliegue.
+que seguía sin commit. El usuario aprobó el cierre y ordenó push, merge, despliegue, actualización del baúl
+y limpieza local el 17/11/2026.
 
 ## Versión y fuentes
 
@@ -60,8 +61,8 @@ redirecciones relativas y prueba que se conserva el origen. También elimina una
 carrera de la prueba que cerraba avisos con índices después de su caducidad.
 Los dos primeros resultados E2E (12/14 y 13/14) quedan registrados, sin ocultarlos.
 
-PR [#1](https://github.com/VMRam95/christmas-planner/pull/1) abierta contra main.
-No se ha publicado producción. Una comprobación adicional del enlace corto de
+PR [#1](https://github.com/VMRam95/christmas-planner/pull/1) fusionada a main
+en `4cb083805cabde660e07c7be20631af98a5a18e7` y publicada en producción. Una comprobación adicional del enlace corto de
 Amazon del deseo real detectó HTML mayor de 2 MiB. La revisión `b07cf1d` analiza
 solo el prefijo acotado y cierra la descarga, conservando el límite y el rechazo de
 imágenes grandes. La extracción del enlace real devuelve un JPEG de 53.717 bytes.
@@ -113,4 +114,46 @@ reservas de esta tarea pendientes de cierre.
 La segunda generación, usada para la regresión con el enlace original de Amazon,
 también se cerró verificando sus nuevos IDs y journals. El recibo final, el resumen
 y las capturas corresponden a `b07cf1d`; no quedan pruebas de producto pendientes
-del agente. Revisión del usuario y merge/despliegue permanecen pendientes.
+del agente. Revisión del usuario, merge y despliegue aprobados y ejecutados; ver el cierre siguiente.
+
+
+## Cierre autorizado y publicación — 17/11/2026
+
+La PR #1 se fusionó con merge commit a `main`, base real del proyecto; no existe
+`develop`. Se verificó que el árbol de producto del merge es idéntico a `b07cf1d`,
+cuya batería completa y capturas figuran en este documento. Todos los cambios de
+producto están publicados en GitHub. Después de sincronizar el checkout principal
+se releyeron AGENTS.md y CLAUDE.md; el ajuste local de exclusión de CAS se conservó
+sin incorporarlo a los commits y se retiró el stash temporal de un solo fichero.
+
+Vercel publicó automáticamente el merge como
+`dpl_HXamTfdMTwGK1YdTeMpoEmYsy7Am`, estado **READY**, con el alias
+https://christmas-planner.vercel.app. Fuente Git y autor personal contrastados con
+la API de Vercel. URL de esta publicación:
+https://christmas-planner-qo7q27ipi-victor-manuels-projects-485c2ed1.vercel.app.
+Rollback previo conservado: `dpl_89Sbs1vpYe3YD1RFXx9JpUq6qbcK`.
+La documentación de cierre puede generar otra publicación con el mismo producto;
+el recibo vivo final queda en `artifacts/product-images-5830/production-current.json`.
+
+Verificación real en producción, sin modificar datos familiares, Auth o SMTP:
+login y ayuda 200; novedades de imágenes visibles; sesión anónima sin usuario;
+usuarios/deseos/imagen sin sesión 401; mutación de origen externo 403; tipo de
+recuperación no admitido 307 con Location relativa. Nueve comprobaciones aprobadas,
+cero errores JavaScript y ausencia de desbordamiento a 1440 y 390 px. Las dos
+capturas públicas se abrieron e inspeccionaron. El flujo privado autenticado de la
+imagen se verificó en el stack local idéntico; no se crearon cuentas/datos de prueba
+en producción ni se consumieron enlaces de recuperación de personas.
+
+Evidencias publicadas: `production-baseline.json`, `production-release.json`,
+`production-smoke.json`, `production-help-desktop.png` y `production-help-mobile.png`
+en `artifacts/product-images-5830/`. El registro completo de recursos se conserva
+también en el checkout principal. El navegador headless de producción se cerró en
+finally; no se arrancó un stack local nuevo, node_modules y .next siguen ausentes,
+y las generaciones de procesos/contenedores propias siguen liberadas. Se retienen
+los worktrees CAS por sus locks de Desktop, los datos sintéticos y las evidencias;
+no se han desbloqueado ni borrado rutas gestionadas por la app.
+
+Baúl: perfil y memoria versionados; INDEX y espejos generados se conservan localmente
+para poder actualizar el estado del Kanban sin generar publicaciones de producto
+por cada captura del estado. El cierre se reconcilia con la tarjeta 5830 y se ejecuta
+`baul.py update` desde el checkout principal.

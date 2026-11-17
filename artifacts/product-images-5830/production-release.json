@@ -1,0 +1,15 @@
+{
+  "id": "dpl_HXamTfdMTwGK1YdTeMpoEmYsy7Am",
+  "url": "christmas-planner-qo7q27ipi-victor-manuels-projects-485c2ed1.vercel.app",
+  "readyState": "READY",
+  "target": "production",
+  "name": "christmas-planner",
+  "aliases": [
+    "christmas-planner.vercel.app",
+    "christmas-planner-victor-manuels-projects-485c2ed1.vercel.app",
+    "christmas-planner-git-main-victor-manuels-projects-485c2ed1.vercel.app"
+  ],
+  "git_commit": "4cb083805cabde660e07c7be20631af98a5a18e7",
+  "validated_product_source": "b07cf1d",
+  "rollback_deployment": "dpl_89Sbs1vpYe3YD1RFXx9JpUq6qbcK"
+}
