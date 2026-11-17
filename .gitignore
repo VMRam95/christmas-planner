@@ -52,3 +52,12 @@ next-env.d.ts
 # Misc
 *.pem
 .env*.local
+
+# Private local process journals and generated credentials
+artifacts/**/supabase.env
+artifacts/**/*-process.json
+artifacts/**/*-process.lock
+/supabase/.temp/
+/supabase/.branches/
+/test-results/
+/playwright-report/

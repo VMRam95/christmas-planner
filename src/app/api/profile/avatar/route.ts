@@ -15,10 +15,11 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { avatar_url } = body
 
-    if (typeof avatar_url !== 'string') {
+    if (typeof avatar_url !== 'string' || !avatar_url.startsWith(process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1/object/public/christmas-avatars/' + session.user.id + '/') || avatar_url.includes('..') || avatar_url.includes('?')) {
       return NextResponse.json(
         { success: false, error: 'avatar_url debe ser una cadena de texto' },
         { status: 400 }

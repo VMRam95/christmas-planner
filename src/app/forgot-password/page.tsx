@@ -1,0 +1,10 @@
+'use client'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState(''), [busy, setBusy] = useState(false), [sent, setSent] = useState(false), [error, setError] = useState('')
+  useEffect(() => { if (new URLSearchParams(window.location.search).has('expired')) setError('Este enlace ha caducado o ya se ha utilizado. Solicita uno nuevo.') }, [])
+  return <main className="min-h-svh flex items-center justify-center px-6 py-12"><div className="w-full max-w-md"><Link href="/" className="brand text-christmas-green mb-10"><span className="brand-mark">✦</span>Christmas Planner</Link><p className="eyebrow text-christmas-green">VOLVAMOS A TU NAVIDAD</p><h1 className="text-3xl font-semibold tracking-tight mt-3 mb-4">Recupera tu acceso.</h1>{sent ? <p role="status" className="bg-christmas-snow rounded-2xl p-5">Si ese email pertenece a la familia, recibirás un enlace para elegir tu contraseña. Tu carta y tus regalos se conservan.</p> : <form className="space-y-5" onSubmit={async e => { e.preventDefault(); setBusy(true); setError(''); try { const data = await fetch('/api/auth/recovery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).then(r => r.json()); if (!data.success) throw new Error(data.error); setSent(true) } catch(e) { setError(e instanceof Error ? e.message : 'No se pudo preparar la recuperación.') } finally { setBusy(false) } }}><p className="text-sm text-muted">Introduce el email de tu carta para crear tu contraseña por primera vez o recuperarla.</p><Input type="email" label="Email" required autoComplete="email" maxLength={254} value={email} onChange={e => setEmail(e.target.value)} error={error || undefined} disabled={busy}/><Button className="w-full" isLoading={busy}>Crear o recuperar contraseña</Button></form>}<Link href="/" className="help-link mt-6">← Volver al acceso</Link></div></main>
+}

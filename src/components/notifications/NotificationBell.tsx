@@ -10,6 +10,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -17,11 +18,14 @@ export function NotificationBell() {
     try {
       const response = await fetch('/api/notifications?limit=10')
       const data = await response.json()
+      if (!data.success) throw new Error(data.error)
+      setError('')
       if (data.success) {
         setNotifications(data.data.notifications)
         setUnreadCount(data.data.unread_count)
       }
     } catch (err) {
+      setError('No se pudieron cargar los avisos. Inténtalo de nuevo.')
       console.error('Error fetching notifications:', err)
     }
   }, [])
@@ -59,26 +63,27 @@ export function NotificationBell() {
     // Mark as read if unread
     if (!notification.read_at) {
       try {
-        await fetch('/api/notifications', {
+        const response = await fetch('/api/notifications', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_ids: [notification.id] }),
         })
+        if (!response.ok) throw new Error('No se pudo marcar el aviso')
         setUnreadCount((prev) => Math.max(0, prev - 1))
         setNotifications((prev) =>
           prev.map((n) =>
             n.id === notification.id ? { ...n, read_at: new Date().toISOString() } : n
           )
         )
-      } catch (err) {
-        console.error('Error marking notification as read:', err)
+      } catch {
+        setError('No se pudo marcar el aviso como leído.'); return
       }
     }
 
     setIsOpen(false)
 
     // Navigate if link exists
-    if (notification.link) {
+    if (notification.link?.startsWith('/') && !notification.link.startsWith('//')) {
       router.push(notification.link)
     }
   }
@@ -91,14 +96,15 @@ export function NotificationBell() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mark_all: true }),
       })
+      if (!response.ok) throw new Error('No se pudieron marcar los avisos')
       if (response.ok) {
         setUnreadCount(0)
         setNotifications((prev) =>
           prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
         )
       }
-    } catch (err) {
-      console.error('Error marking all as read:', err)
+    } catch {
+      setError('No se pudieron marcar los avisos. Inténtalo de nuevo.')
     } finally {
       setLoading(false)
     }
@@ -126,6 +132,8 @@ export function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-muted hover:text-christmas-green transition-colors rounded-lg hover:bg-christmas-green/10"
         aria-label="Notificaciones"
+        aria-expanded={isOpen}
+        aria-controls="notification-panel"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -152,7 +160,7 @@ export function NotificationBell() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96 bg-white rounded-xl shadow-xl border border-border overflow-hidden z-50">
+        <div id="notification-panel" className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96 bg-white rounded-xl shadow-xl border border-border overflow-hidden z-50">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-christmas-snow border-b border-border">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -169,9 +177,10 @@ export function NotificationBell() {
             )}
           </div>
 
+          {error && <div role="alert" className="p-4 text-sm text-red-700">{error}<button className="block underline min-h-11" onClick={fetchNotifications}>Reintentar</button></div>}
           {/* Notifications List */}
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {notifications.length === 0 && !error ? (
               <div className="py-8 px-4 text-center">
                 <span className="text-3xl block mb-2">🎄</span>
                 <p className="text-muted text-sm">No tienes notificaciones</p>

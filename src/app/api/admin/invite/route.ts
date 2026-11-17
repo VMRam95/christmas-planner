@@ -1,3 +1,4 @@
+import { isEmail } from '@/lib/validation'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { sendEmail } from '@/lib/email/client'
@@ -25,10 +26,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { name, email } = body
 
-    if (!name || !email) {
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 80 || !isEmail(email)) {
       return NextResponse.json(
         { success: false, error: 'Nombre y email son requeridos' },
         { status: 400 }

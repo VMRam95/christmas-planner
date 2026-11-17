@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 
 import type { User } from '@/types'
 
@@ -11,18 +12,14 @@ type AuthState = {
   error: string | null
 }
 
-export function useAuth() {
+function useAuthState() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [state, setState] = useState<AuthState>({
     user: null,
     isLoading: true,
     error: null,
   })
-
-  // Check session on mount
-  useEffect(() => {
-    checkSession()
-  }, [])
 
   const checkSession = useCallback(async () => {
     try {
@@ -39,14 +36,16 @@ export function useAuth() {
     }
   }, [])
 
-  const login = useCallback(async (email: string): Promise<boolean> => {
+  useEffect(() => { void checkSession() }, [checkSession])
+
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await response.json()
@@ -67,13 +66,14 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth', { method: 'DELETE' })
+      const response = await fetch('/api/auth', { method: 'DELETE' })
+      if (!response.ok) throw new Error('No se pudo cerrar la sesión')
       setState({ user: null, isLoading: false, error: null })
       router.push('/')
     } catch {
-      console.error('Error al cerrar sesión')
+      showToast('No se pudo cerrar la sesión. Inténtalo de nuevo.', 'error')
     }
-  }, [router])
+  }, [router, showToast])
 
   return {
     user: state.user,
@@ -84,4 +84,15 @@ export function useAuth() {
     logout,
     checkSession,
   }
+}
+
+const AuthContext = createContext<ReturnType<typeof useAuthState> | null>(null)
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const auth = useAuthState()
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
+}
+export function useAuth() {
+  const auth = useContext(AuthContext)
+  if (!auth) throw new Error('AuthProvider is required')
+  return auth
 }

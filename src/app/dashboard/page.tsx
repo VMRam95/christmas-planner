@@ -242,14 +242,14 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+      <main id="main-content" className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
         {/* Welcome section - More compact */}
-        <div className="mb-4 sm:mb-6">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+        <div className="page-hero">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold">
             ¡Hola, {user?.name}! 👋
           </h1>
           <p className="text-xs sm:text-sm text-muted mt-0.5">
-            Bienvenido al organizador de regalos navideños
+            La ilusión empieza aquí. Prepara tu carta y encuentra el regalo perfecto.
           </p>
         </div>
 

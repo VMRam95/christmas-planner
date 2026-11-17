@@ -1,4 +1,5 @@
 'use client'
+import { useDialogFocus } from '@/hooks/useDialogFocus'
 
 import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
@@ -43,19 +44,7 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, preventClose, onClose])
 
-  // Focus trap and prevent scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      modalRef.current?.focus()
-    } else {
-      document.body.style.overflow = ''
-    }
-
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useDialogFocus(isOpen, modalRef)
 
   if (!isOpen) return null
 
@@ -77,7 +66,7 @@ export function Modal({
         ref={modalRef}
         tabIndex={-1}
         className={cn(
-          'relative bg-white rounded-xl shadow-2xl w-full mx-4 animate-scale-in',
+          'relative bg-white rounded-xl shadow-2xl w-full mx-4 max-h-[90svh] overflow-y-auto animate-scale-in',
           sizeClasses[size],
           className
         )}

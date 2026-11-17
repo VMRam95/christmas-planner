@@ -22,10 +22,10 @@ _For complete CodeAgentSwarm instructions, see the global CLAUDE.md file at ~/.c
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Next.js 14 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Language | TypeScript (strict mode) |
 | Database | Supabase (PostgreSQL) |
-| Styling | Tailwind CSS v3 |
+| Styling | Tailwind CSS v4 |
 | Deployment | Vercel |
 | Package Manager | pnpm |
 
@@ -113,7 +113,7 @@ christmas-planner/
 ### 3. State Management
 - **Server State**: Supabase queries with React Server Components
 - **Client State**: React hooks (`useState`, `useReducer`) for local UI state
-- **Session**: Cookie-based simple auth (email stored in httpOnly cookie)
+- **Session**: Supabase Auth with HTTP-only cookies; server identity verified with getUser(). Email and password only. Google login removed by user instruction on 2026-10-04; VetiMoly authentication is not shared or modified.
 
 ### 4. API Design
 - RESTful API routes in `/app/api/`
@@ -219,6 +219,7 @@ export function WishCard({ wish, onAssign, showAssignment = false }: WishCardPro
 - `PascalCase.tsx` for components
 - `camelCase.ts` for utilities/hooks
 - `route.ts` for API routes (Next.js convention)
+- Client authentication state is shared through `AuthProvider`; do not instantiate separate session state per screen.
 
 ### Imports Order
 1. React/Next.js
@@ -353,7 +354,7 @@ pnpm db:push          # Push migrations to Supabase
 - `christmas_planner.surprise_gifts` - Unannounced gifts
 
 ### RLS
-All tables have RLS enabled with permissive policies for simplicity.
+Migration 005 removes direct anon/authenticated table access. Guarded server APIs require the service role key. Apply this migration with the authentication release; it is not applied remotely by local tests.
 
 ---
 
@@ -363,7 +364,7 @@ All tables have RLS enabled with permissive policies for simplicity.
 # .env.local (configured)
 NEXT_PUBLIC_SUPABASE_URL=https://vxirigqzqixsihyunazf.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<configured>
-SUPABASE_SERVICE_ROLE_KEY=<optional - get from Supabase Dashboard>
+SUPABASE_SERVICE_ROLE_KEY=<required server-only key>
 ```
 
 ---
@@ -391,7 +392,19 @@ SUPABASE_SERVICE_ROLE_KEY=<optional - get from Supabase Dashboard>
 
 ## Notes
 
-- Users are pre-configured in Supabase (closed list)
-- No password authentication - email-only identification
+- Users are pre-configured in christmas_planner.users (closed family allowlist); each request verifies a confirmed Supabase Auth identity.
+- Real email/password authentication on the existing Supabase project; no Google OAuth.
+- Existing family members need matching Supabase Auth identities before rollout.
+- Recovery requires provider token verification; configure the recovery email template and SMTP before enabling it.
+- Hosted Auth is shared: preserve other consumers when integrating templates, redirect allowlists or signup settings.
 - Mobile-first responsive design
 - Accessibility: proper ARIA labels, keyboard navigation
+
+## Renewal handoff
+
+Read `docs/renovacion-2026.md` for implementation, verification, deployment gates and resource cleanup. Local setup and test commands are in `README.md`; help/tutorials live at `/help`. No remote migrations or real emails are part of local validation.
+
+
+### Family access emails (2026-10-04)
+
+Password creation/recovery uses native Supabase admin-generated invite/recovery tokens delivered by the existing email-service, not the shared Supabase SMTP. Each request checks the existing family profile first and uses durable service-only limits from migration006. Tokens grant password changes only after native verifyOtp and verified family membership. The project-specific SMTP config for christmas-planner and password-recovery template are configured; other projects and VetiMoly are unchanged. Local email adapter scripts/local-email-service.mjs captures synthetic access emails in Mailpit and cannot send to real people. Do not use private HTML links as product delivery.

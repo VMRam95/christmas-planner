@@ -1,3 +1,4 @@
+import { isId } from '@/lib/validation'
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -76,10 +77,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { wish_id, external } = body
 
-    if (!wish_id) {
+    if (!isId(wish_id)) {
       return NextResponse.json(
         { success: false, error: 'wish_id es requerido' },
         { status: 400 }
@@ -87,6 +89,8 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerClient()
+
+    if (external !== undefined && typeof external !== 'boolean') return NextResponse.json({ success: false, error: 'Asignación inválida' }, { status: 400 })
 
     // Check if wish exists and is not owned by current user
     const { data: wish } = await supabase
@@ -165,7 +169,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const wish_id = searchParams.get('wish_id')
 
-    if (!wish_id) {
+    if (!isId(wish_id)) {
       return NextResponse.json(
         { success: false, error: 'wish_id es requerido' },
         { status: 400 }
@@ -173,6 +177,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     const supabase = createServerClient()
+
+    // Reject own wishes before reading assignments, including when none exist.
+    const { data: wish } = await supabase.from('wishes').select('user_id').eq('id', wish_id).single()
+    if (!wish || wish.user_id === session.user.id) return NextResponse.json({ success: false, error: 'No puedes quitar esta asignación' }, { status: 403 })
 
     // Check if the assignment exists and get its details
     const { data: assignment } = await supabase

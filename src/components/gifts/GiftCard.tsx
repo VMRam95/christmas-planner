@@ -114,6 +114,7 @@ export function GiftCard({
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label={'Editar ' + gift.title}
                   onClick={() => onEdit(gift as Wish | SurpriseGift)}
                   disabled={isLoading}
                   className="px-2"
@@ -125,6 +126,7 @@ export function GiftCard({
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label={'Eliminar ' + gift.title}
                   onClick={() => onDelete(gift as Wish | SurpriseGift)}
                   disabled={isLoading}
                   className="px-2 text-red-500 hover:text-red-700 hover:bg-red-50"

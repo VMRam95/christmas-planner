@@ -1,93 +1,52 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function HomePage() {
+  const router = useRouter()
+  const { login, isLoading, error, isAuthenticated } = useAuth()
   const [email, setEmail] = useState('')
-  const { login, isLoading, error } = useAuth()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (email.trim()) {
-      await login(email.trim())
-    }
-  }
-
+  const [password, setPassword] = useState('')
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (isAuthenticated) router.replace('/dashboard')
+  }, [isAuthenticated, router])
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-6 md:p-8 bg-gradient-to-b from-christmas-snow to-christmas-cream">
-      {/* Decorative elements - Hidden on mobile, visible on tablet+ */}
-      <div className="hidden sm:block absolute top-10 left-10 text-4xl md:text-6xl opacity-20 select-none">🎄</div>
-      <div className="hidden sm:block absolute top-20 right-20 text-3xl md:text-4xl opacity-20 select-none">⭐</div>
-      <div className="hidden sm:block absolute bottom-20 left-20 text-4xl md:text-5xl opacity-20 select-none">🎁</div>
-      <div className="hidden sm:block absolute bottom-10 right-10 text-4xl md:text-6xl opacity-20 select-none">❄️</div>
-
-      <div className="w-full max-w-md space-y-6 sm:space-y-8 relative z-10">
-        {/* Logo */}
-        <div className="text-center">
-          <span className="text-5xl sm:text-6xl md:text-7xl block mb-3 sm:mb-4">🎅</span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-christmas-green">
-            Christmas Planner
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-muted">
-            Organiza los regalos de Navidad en familia
-          </p>
+    <main className="login-layout">
+      <section className="login-story" aria-label="Bienvenido a Christmas Planner">
+        <Link href="/" className="brand"><span className="brand-mark">✦</span> Christmas Planner</Link>
+        <div className="story-content">
+          <p className="eyebrow">MENOS PRISAS. MÁS ILUSIÓN.</p>
+          <h1>Los mejores regalos<br />empiezan con<br /><em>un poco de magia.</em></h1>
+          <p>Una carta para cada persona. Un lugar para organizarlo todo. Y la sorpresa, siempre a salvo.</p>
+          <div className="gift-scene" aria-hidden="true"><span className="scene-star">✦</span><div className="gift-box gift-small"><i /></div><div className="gift-box gift-large"><i /></div><span className="scene-spark">✧</span></div>
+          <div className="story-steps"><span>01 · Escribe tu carta</span><span>02 · Elige sus regalos</span><span>03 · Guarda el secreto</span></div>
         </div>
-
-        {/* Login Card */}
-        <Card className="shadow-lg">
-          <CardHeader className="text-center py-4 sm:py-6">
-            <CardTitle className="text-lg sm:text-xl">Acceder</CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 sm:px-6 pb-6">
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-              <Input
-                type="email"
-                label="Tu email"
-                placeholder="nombre@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={error ?? undefined}
-                required
-                autoComplete="email"
-                autoFocus
-              />
-
-              <Button
-                type="submit"
-                className="w-full min-h-[44px] text-base sm:text-lg"
-                size="lg"
-                isLoading={isLoading}
-              >
-                {isLoading ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-
-            <p className="mt-4 text-xs sm:text-sm text-center text-muted">
-              Solo los miembros de la familia pueden acceder
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Features */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 text-center">
-          <div className="space-y-1 sm:space-y-2">
-            <span className="text-xl sm:text-2xl md:text-3xl block">📝</span>
-            <p className="text-xs sm:text-sm text-muted">Crea tu lista</p>
-          </div>
-          <div className="space-y-1 sm:space-y-2">
-            <span className="text-xl sm:text-2xl md:text-3xl block">🎁</span>
-            <p className="text-xs sm:text-sm text-muted">Asigna regalos</p>
-          </div>
-          <div className="space-y-1 sm:space-y-2">
-            <span className="text-xl sm:text-2xl md:text-3xl block">🤫</span>
-            <p className="text-xs sm:text-sm text-muted">Mantén el secreto</p>
-          </div>
+        <p className="story-footer">Hecho para compartir la ilusión en familia.</p>
+      </section>
+      <section className="login-form-panel">
+        <div className="w-full max-w-sm">
+          <p className="eyebrow text-christmas-green">TU NAVIDAD, EN UN SOLO LUGAR</p>
+          <h2 className="text-3xl sm:text-4xl font-semibold mt-3 mb-3 tracking-tight">Qué alegría verte.</h2>
+          <p className="text-muted mb-8">Entra para preparar algo especial.</p>
+          <form onSubmit={async (e) => { e.preventDefault(); await login(email.trim(), password) }} className="space-y-5">
+            <Input label="Email" type="email" autoComplete="username" placeholder="tu@email.com" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading} />
+            <div>
+              <div className="relative"><Input label="Contraseña" type={visible ? 'text' : 'password'} autoComplete="current-password" required maxLength={128} value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading} className="pr-20" /><button type="button" className="absolute right-3 bottom-1 min-h-11 text-xs font-medium text-christmas-green" onClick={() => setVisible(!visible)} aria-pressed={visible}>{visible ? 'Ocultar' : 'Mostrar'}</button></div>
+              <Link href="/forgot-password" className="block mt-3 text-sm text-christmas-green text-right">Crear o recuperar contraseña</Link>
+            </div>
+            {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+            <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>Entrar en mi Navidad <span aria-hidden="true">→</span></Button>
+          </form>
+          <p className="text-sm text-muted text-center mt-7">Acceso privado para miembros de la familia.<br />Tu carta es tuya. Las sorpresas se quedan en secreto.</p>
+          <div className="flex justify-center gap-5 mt-8 text-sm"><Link href="/help" className="text-christmas-green">Manual de usuario</Link><Link href="/help#novedades" className="text-christmas-green">Novedades</Link></div>
         </div>
-      </div>
+      </section>
     </main>
   )
 }

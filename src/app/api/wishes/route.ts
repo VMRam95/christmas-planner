@@ -1,3 +1,4 @@
+import { giftError, isId } from '@/lib/validation'
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -57,8 +58,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { title, description, url, priority } = body
+    const validationError = giftError(body)
+    if (validationError) return NextResponse.json({ success: false, error: validationError }, { status: 400 })
 
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
       return NextResponse.json(
@@ -89,19 +93,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send email notifications to family members (async, don't block response)
-    sendNewWishNotifications(session.user, data).then((result) => {
-      if (result.sentTo.length > 0) {
-        console.log(`Notifications sent to: ${result.sentTo.join(', ')}`)
-      }
-      if (result.errors.length > 0) {
-        console.warn('Notification errors:', result.errors)
-      }
-    }).catch((err) => {
-      console.error('Error sending notifications:', err)
-    })
+    // Await completion: serverless runtimes can terminate detached promises.
+    const notificationResult = await sendNewWishNotifications(session.user, data)
+    return NextResponse.json({ success: true, data, notification_warning: notificationResult.success ? null : 'El deseo se ha guardado, pero algunos avisos no se han podido preparar.' })
 
-    return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('Error in wishes POST:', error)
     return NextResponse.json(
@@ -122,10 +117,13 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { id, title, description, url, priority } = body
+    const validationError = giftError(body, true)
+    if (validationError) return NextResponse.json({ success: false, error: validationError }, { status: 400 })
 
-    if (!id) {
+    if (!isId(id)) {
       return NextResponse.json(
         { success: false, error: 'ID es requerido' },
         { status: 400 }
@@ -193,7 +191,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
-    if (!id) {
+    if (!isId(id)) {
       return NextResponse.json(
         { success: false, error: 'ID es requerido' },
         { status: 400 }

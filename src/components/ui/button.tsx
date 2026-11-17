@@ -14,11 +14,11 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-christmas-red text-white hover:bg-christmas-red-dark focus:ring-christmas-red',
+    'bg-christmas-green text-white hover:bg-christmas-green-dark focus:ring-christmas-green',
   secondary:
     'bg-christmas-green text-white hover:bg-christmas-green-dark focus:ring-christmas-green',
   outline:
-    'border-2 border-christmas-green text-christmas-green hover:bg-christmas-green hover:text-white focus:ring-christmas-green',
+    'border border-border text-christmas-green hover:bg-christmas-green hover:text-white focus:ring-christmas-green',
   ghost:
     'text-christmas-green hover:bg-christmas-green/10 focus:ring-christmas-green',
   danger:
@@ -48,7 +48,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
+          'inline-flex items-center justify-center gap-2 rounded-xl font-medium min-h-11',
           'focus:outline-none focus:ring-2 focus:ring-offset-2',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'transition-colors duration-200',

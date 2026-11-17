@@ -33,12 +33,16 @@ export async function sendNewWishNotifications(
     const dbResult = await createNewWishNotifications(wishCreator, wish)
     result.dbNotifications = { created: dbResult.created, errors: dbResult.errors }
     if (!dbResult.success) {
+      result.success = false
       console.warn('Some DB notifications failed:', dbResult)
     }
+
+    if (process.env.EMAIL_DELIVERY_ENABLED !== 'true') return result
 
     // Check if email service is configured
     if (!process.env.EMAIL_SERVICE_API_KEY) {
       console.warn('EMAIL_SERVICE_API_KEY not configured, skipping email notifications')
+      result.success = false
       result.errors.push('Email service not configured')
       return result
     }
@@ -72,7 +76,9 @@ export async function sendNewWishNotifications(
       )
 
     if (prefsError) {
-      console.error('Error fetching preferences:', prefsError)
+      result.success = false
+      result.errors.push('Unable to verify email preferences; delivery skipped')
+      return result
     }
 
     // Create a map of user preferences (default to true if not found)
@@ -112,12 +118,10 @@ export async function sendNewWishNotifications(
       'christmas-planner/gift-added'
     )
 
-    result.sentTo = usersToNotify
-      .filter((_, i) => !batchResult.errors[i])
-      .map((u) => u.email)
+    result.sentTo = batchResult.sentTo
     result.errors.push(...batchResult.errors)
 
-    if (batchResult.failed > 0 && batchResult.sent === 0) {
+    if (batchResult.failed > 0) {
       result.success = false
     }
 
@@ -128,34 +132,6 @@ export async function sendNewWishNotifications(
     result.errors.push('Unexpected error')
     return result
   }
-}
-
-/**
- * Send notification when someone assigns themselves to a gift
- */
-export async function sendGiftAssignedNotification(
-  giftOwner: User,
-  wish: Wish,
-  assigneeName: string
-): Promise<{ success: boolean; error?: string }> {
-  // Check if email service is configured
-  if (!process.env.EMAIL_SERVICE_API_KEY) {
-    return { success: false, error: 'Email service not configured' }
-  }
-
-  const emailResult = await sendEmail({
-    to: giftOwner.email,
-    template: 'christmas-planner/gift-assigned',
-    data: {
-      to_name: giftOwner.name,
-      assignee_name: assigneeName,
-      gift_title: wish.title,
-      gift_description: wish.description || '',
-      app_url: APP_URL,
-    },
-  })
-
-  return emailResult
 }
 
 /**

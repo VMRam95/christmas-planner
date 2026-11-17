@@ -1,92 +1,38 @@
+import { clearPasswordRecovery } from './recovery'
 import { cookies } from 'next/headers'
+import { createAuthClient } from './supabase/auth-server'
 import { createServerClient } from './supabase/server'
-
 import type { User, Session } from '@/types'
 
-const SESSION_COOKIE_NAME = 'christmas-planner-session'
-const SESSION_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
-
-/**
- * Get current session from cookies
- */
 export async function getSession(): Promise<Session | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)
-
-  if (!sessionCookie?.value) {
-    return null
-  }
-
-  try {
-    const session = JSON.parse(sessionCookie.value) as Session
-
-    // Check if session has expired
-    if (new Date(session.expires) < new Date()) {
-      return null
-    }
-
-    return session
-  } catch {
-    return null
-  }
+  const auth = await createAuthClient()
+  // getUser verifies the token against Auth. Never trust a client-supplied user cookie.
+  const { data: { user }, error } = await auth.auth.getUser()
+  if (error || !user?.email || !user.email_confirmed_at) return null
+  const { data: member } = await createServerClient().from('users').select('*')
+    .eq('email', user.email.toLowerCase()).single()
+  if (!member) return null
+  return { user: member as User, expires: new Date(Date.now() + 3600000).toISOString() }
 }
 
-/**
- * Get current user from session
- */
 export async function getCurrentUser(): Promise<User | null> {
-  const session = await getSession()
-  return session?.user ?? null
+  return (await getSession())?.user ?? null
 }
 
-/**
- * Validate email and create session if valid
- */
-export async function validateAndCreateSession(email: string): Promise<{
-  success: boolean
-  user?: User
-  error?: string
-}> {
-  const supabase = createServerClient()
-
-  // Check if user exists in database
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email.toLowerCase().trim())
-    .single()
-
-  if (error || !user) {
-    console.error('Auth error:', error)
-    return {
-      success: false,
-      error: 'Este email no está autorizado para acceder',
-    }
+export async function validateAndCreateSession(email: string, password: string) {
+  const auth = await createAuthClient()
+  const { error } = await auth.auth.signInWithPassword({ email: email.toLowerCase().trim(), password })
+  if (!error) {
+    const session = await getSession()
+    if (session) return { success: true, user: session.user }
+    await auth.auth.signOut({ scope: 'local' })
   }
-
-  // Create session
-  const session: Session = {
-    user: user as User,
-    expires: new Date(Date.now() + SESSION_MAX_AGE * 1000).toISOString(),
-  }
-
-  // Set cookie
-  const cookieStore = await cookies()
-  cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(session), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: SESSION_MAX_AGE,
-    path: '/',
-  })
-
-  return { success: true, user: user as User }
+  return { success: false, error: 'No se ha podido acceder. Comprueba tus credenciales y que tu cuenta pertenece a la familia.' }
 }
 
-/**
- * Clear session (logout)
- */
 export async function clearSession(): Promise<void> {
-  const cookieStore = await cookies()
-  cookieStore.delete(SESSION_COOKIE_NAME)
+  const auth = await createAuthClient()
+  await auth.auth.signOut({ scope: 'local' })
+  await clearPasswordRecovery()
+  ;(await cookies()).delete('christmas-planner-session')
 }
