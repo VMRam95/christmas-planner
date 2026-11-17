@@ -6,3 +6,6 @@
 !cloud-baseline-creative.json
 !cloud-fixed-joyroom.json
 !cloud-fixed-creative.json
+!production-release.json
+!production-smoke.json
+!cleanup-summary.json

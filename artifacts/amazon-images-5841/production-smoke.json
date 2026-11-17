@@ -1,0 +1,43 @@
+{
+  "results": [
+    {
+      "path": "/help",
+      "width": 1440,
+      "status": 200,
+      "amazonReleaseNote": true,
+      "tutorial": true,
+      "noOverflow": true
+    },
+    {
+      "path": "/help",
+      "width": 390,
+      "status": 200,
+      "amazonReleaseNote": true,
+      "tutorial": true,
+      "noOverflow": true
+    },
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/api/product-image",
+      "status": 401,
+      "cacheControl": "no-store"
+    },
+    {
+      "path": "/api/wishes",
+      "status": 401,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    },
+    {
+      "path": "/api/users",
+      "status": 401,
+      "cacheControl": "public, max-age=0, must-revalidate"
+    }
+  ],
+  "errors": [],
+  "productionDataWrites": false,
+  "privateFlow": "Verified in isolated local stack; exact extractor verified on Vercel with fixed public product links",
+  "passed": true
+}

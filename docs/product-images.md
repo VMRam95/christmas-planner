@@ -197,4 +197,30 @@ Registro privado de recursos: `artifacts/amazon-images-5841/local-resources.json
 La preview de diagnóstico es temporal y nunca se promueve a producción. La CLI de
 Vercel creó una credencial de acceso a previews al usar `curl`; su identidad se
 registró de forma privada para revocar solo esa credencial durante el cierre.
-PR, publicación, comprobación final y recibo de limpieza se añaden al cerrar.
+PR [#2](https://github.com/VMRam95/christmas-planner/pull/2) fusionada tras sus
+checks aprobados: merge `970b6bb258064654b5d2ca85e4ea30f5400cbe9c`, producto
+`b04a9cd6293092a3b649cd49d0d5eceae8fbf0f9`. Vercel publica el merge como
+`dpl_3WZEVKUjsWsQTb13JtysaaTRKxT2`, READY y alias
+https://christmas-planner.vercel.app. Se contrastaron hashes de la versión local,
+fuente Git del despliegue, alias y novedades visibles. La comprobación pública de
+producción aprueba ayuda en 1440/390 sin desbordamiento, login, límites anónimos
+y `no-store` en la imagen sin sesión, sin errores JavaScript ni escrituras.
+La carta privada se probó en el stack local; la extracción de ambos enlaces
+originales, con el código real en Vercel. No se usó una sesión familiar en remoto.
+Rollback conservado: `dpl_7S68bzWJZQhpdU3T4oBrtgptozvP`.
+
+Limpieza: ambos procesos propios liberados, seis IDs de contenedor verificados y
+retirados con parada nativa, volúmenes sintéticos conservados, navegadores cerrados.
+Tres previews de diagnóstico eliminadas y la única credencial de acceso que había
+creado la CLI revocada, con configuración de protección igual al baseline.
+Se retiraron node_modules, .next y fixture temporal tras comprobar inactividad:
+552.720 KiB, aproximadamente 540 MiB. Código, configuración privada, logs y
+capturas conservados; worktree CAS con su lock intacto. Recibos:
+`production-release.json`, `production-smoke.json` y `cleanup-summary.json` en
+`artifacts/amazon-images-5841/`. La tarjeta 5841 queda en revisión del usuario;
+no quedan pruebas, publicación ni limpieza ejecutables pendientes del agente.
+
+El commit documental de cierre puede generar otra publicación con el mismo producto.
+El recibo vivo final se conserva localmente en
+`artifacts/amazon-images-5841/production-current.json`, sin provocar otra publicación
+por actualizar un estado generado.

@@ -1,0 +1,32 @@
+{
+  "task": 5841,
+  "status": "closed",
+  "processes": "Both owned journals released",
+  "containers": "Six exact recorded IDs absent after native Supabase stop",
+  "diagnostic_previews_removed": [
+    "dpl_9wnEMStxKyfkMXQs4wkigSsjBmtS",
+    "dpl_GfRN3cjQEb7jch4CY8t7pqexG5rW",
+    "dpl_AqovxdN7cjt6eLNCdUb4XEL8zo8A"
+  ],
+  "automation_bypass": "Only CLI-created credential revoked; project protectionBypass restored to original baseline",
+  "browser": "Own headless browsers closed in finally",
+  "caches": {
+    "removed_KiB": {
+      "node_modules": 465444,
+      ".next": 87248,
+      ".vercel/amazon-probe-5841": 28
+    },
+    "total_KiB": 552720,
+    "free_before_bytes": 227718557696,
+    "free_after_bytes": 227820040192,
+    "retained": [
+      "CAS locked worktree and code",
+      "Evidence and full test logs",
+      "Private local configuration and process journals",
+      "Synthetic named volumes"
+    ],
+    "pending": []
+  },
+  "worktree": "Retained with CAS lock; no manual unlock",
+  "postflight_errors": []
+}

@@ -74,6 +74,10 @@
     "limitations": "Emulation only; no physical handset or screen-reader certification; timings are not field INP"
   },
   "delivery": {
-    "status": "validated locally and in hosted fixed-product probe; PR and production verification pending"
+    "status": "Production ready and public smoke passed; agent resources closed",
+    "pr": "https://github.com/VMRam95/christmas-planner/pull/2",
+    "merge": "970b6bb258064654b5d2ca85e4ea30f5400cbe9c",
+    "deployment": "dpl_3WZEVKUjsWsQTb13JtysaaTRKxT2",
+    "manual_review": "CAS card remains in_testing until user acceptance"
   }
 }
