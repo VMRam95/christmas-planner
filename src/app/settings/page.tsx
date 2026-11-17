@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
@@ -9,6 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { BackLink } from '@/components/ui/back-link'
+
+import { AccountDetails } from '@/components/account/AccountDetails'
+import Link from 'next/link'
 
 import type { UserPreferences } from '@/types'
 
@@ -19,6 +22,7 @@ export default function SettingsPage() {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [emailAvailable, setEmailAvailable] = useState(false)
   const [emailNotifications, setEmailNotifications] = useState(true)
 
   // Avatar state
@@ -27,6 +31,8 @@ export default function SettingsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
+  useEffect(() => () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview) }, [avatarPreview])
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -34,18 +40,12 @@ export default function SettingsPage() {
     }
   }, [authLoading, isAuthenticated, router])
 
-  // Fetch preferences
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchPreferences()
-    }
-  }, [isAuthenticated])
-
-  const fetchPreferences = async () => {
+  const fetchPreferences = useCallback(async () => {
     try {
       const response = await fetch('/api/settings')
       const data = await response.json()
       if (data.success) {
+        setEmailAvailable(data.email_delivery_available === true)
         setPreferences(data.data)
         setEmailNotifications(data.data.email_notifications_enabled)
       } else {
@@ -57,7 +57,9 @@ export default function SettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
+
+  useEffect(() => { if (isAuthenticated) void fetchPreferences() }, [isAuthenticated, fetchPreferences])
 
   const handleSave = async () => {
     setSaving(true)
@@ -99,10 +101,11 @@ export default function SettingsPage() {
 
     // Validate file size (2MB max)
     if (file.size > 2 * 1024 * 1024) {
-      showToast('El archivo es muy grande. Maximo 2MB', 'error')
+      showToast('El archivo es muy grande. Máximo 2 MB', 'error')
       return
     }
 
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     setSelectedFile(file)
     const previewUrl = URL.createObjectURL(file)
     setAvatarPreview(previewUrl)
@@ -139,6 +142,7 @@ export default function SettingsPage() {
       if (updateData.success) {
         showToast('Foto de perfil actualizada', 'success')
         setSelectedFile(null)
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview)
         setAvatarPreview(null)
         // Refresh user session to get updated avatar
         checkSession()
@@ -159,9 +163,12 @@ export default function SettingsPage() {
     setUploadingAvatar(true)
     try {
       // Delete from storage
-      await fetch(`/api/upload/avatar?url=${encodeURIComponent(user.avatar_url)}`, {
+      const removal = await fetch(`/api/upload/avatar?url=${encodeURIComponent(user.avatar_url)}`, {
         method: 'DELETE',
       })
+
+      const removalData = await removal.json()
+      if (!removalData.success) throw new Error(removalData.error || 'No se pudo eliminar la foto')
 
       // Update user profile
       const response = await fetch('/api/profile/avatar', {
@@ -217,18 +224,21 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <main id="main-content" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Page header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground flex items-center gap-2">
-            ⚙️ Ajustes
+            Tu cuenta, a tu manera.
           </h1>
           <p className="text-sm sm:text-base text-muted mt-1">
-            Configura tus preferencias de la aplicacion
+            Perfil, seguridad y avisos. Todo bajo tu control.
           </p>
         </div>
+
+        <Link href="/help#cuenta" className="help-link mb-6">Cómo gestionar mi cuenta →</Link>
+        {user && <AccountDetails user={user} refresh={checkSession} />}
 
         {/* Profile photo section */}
         <Card className="mb-4 sm:mb-6">
@@ -244,6 +254,7 @@ export default function SettingsPage() {
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-christmas-snow border-4 border-christmas-green/20 flex items-center justify-center">
                   {displayAvatar ? (
                     <Image
+                      unoptimized
                       src={displayAvatar}
                       alt="Avatar"
                       width={128}
@@ -266,7 +277,7 @@ export default function SettingsPage() {
               {/* Actions */}
               <div className="flex flex-col gap-3 flex-1">
                 <p className="text-sm text-muted text-center sm:text-left">
-                  Tu foto de perfil sera visible para todos los miembros de la familia.
+                  Tu foto de perfil será visible para todos los miembros de la familia.
                 </p>
 
                 <input
@@ -318,7 +329,7 @@ export default function SettingsPage() {
                 )}
 
                 <p className="text-xs text-muted text-center sm:text-left">
-                  JPG, PNG, WebP o GIF. Maximo 2MB.
+                  JPG, PNG, WebP o GIF. Máximo 2 MB.
                 </p>
               </div>
             </div>
@@ -347,23 +358,25 @@ export default function SettingsPage() {
                     Recibe un email cuando un miembro de la familia añada un nuevo regalo a su carta
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 min-h-11 min-w-11">
                   <input
                     type="checkbox"
                     checked={emailNotifications}
                     onChange={(e) => setEmailNotifications(e.target.checked)}
-                    className="sr-only peer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer peer z-10"
+                    aria-label="Notificaciones por email"
                     disabled={saving}
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-christmas-green/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-christmas-green"></div>
+                  <div className="relative pointer-events-none w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-christmas-green/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-christmas-green"></div>
                 </label>
               </div>
 
+              {!emailAvailable && <p role="status" className="text-sm text-muted">Los avisos por correo no están disponibles en este momento. Tu preferencia quedará guardada y los avisos de la campana seguirán funcionando.</p>}
               {/* Info text */}
               <div className="flex items-start gap-2 p-3 bg-christmas-gold/10 rounded-lg border border-christmas-gold/20">
                 <span className="text-lg flex-shrink-0">💡</span>
                 <p className="text-xs sm:text-sm text-christmas-gold-dark">
-                  Cuando alguien de tu familia añada un regalo a su carta, recibiras un email con los
+                  Cuando el correo esté disponible y tengas los avisos activados, recibirás un email con los
                   detalles y un enlace directo para ver su lista de deseos.
                 </p>
               </div>

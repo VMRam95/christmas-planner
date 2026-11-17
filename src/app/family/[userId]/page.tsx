@@ -283,7 +283,8 @@ export default function FamilyMemberPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 text-center">
+        <main id="main-content" className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 text-center">
+        <Link href="/help#familia" className="help-link mb-5">Guía de esta pantalla →</Link>
           <span className="text-5xl sm:text-6xl block mb-3 sm:mb-4">🤷</span>
           <h1 className="text-lg sm:text-xl font-semibold mb-2">Usuario no encontrado</h1>
           <Link href="/dashboard">
@@ -298,7 +299,8 @@ export default function FamilyMemberPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <main id="main-content" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <Link href="/help#familia" className="help-link mb-5">Guía de esta pantalla →</Link>
         <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Member header */}

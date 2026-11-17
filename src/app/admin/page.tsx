@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -370,7 +371,8 @@ En esta aplicación podrás:
 Para acceder, simplemente entra en:
 ${APP_URL}
 
-E inicia sesión con tu email: ${familyUser.email}
+Usa tu email: ${familyUser.email}
+Si es tu primer acceso, pulsa Crear o recuperar contraseña para elegirla por email. Después podrás iniciar sesión.
 
 ¡Felices fiestas! 🎄🎁`
   }
@@ -458,7 +460,7 @@ E inicia sesión con tu email: ${familyUser.email}
           </div>
 
           <p className="text-gray-500 text-xs sm:text-sm text-center">
-            Solo tienes que introducir tu email para entrar, ¡sin contraseña!
+            Si es tu primer acceso, pulsa Crear o recuperar contraseña y usa tu email autorizado para elegirla.
           </p>
         </div>
 
@@ -467,7 +469,7 @@ E inicia sesión con tu email: ${familyUser.email}
           <p className="text-xl sm:text-2xl mb-2">🎄🎁🎅</p>
           <p className="text-gray-600 font-medium text-sm sm:text-base">¡Felices Fiestas!</p>
           <p className="text-gray-400 text-[10px] sm:text-xs mt-2">
-            Este email fue enviado desde Christmas Planner
+            Vista previa de la invitación de Christmas Planner
           </p>
         </div>
       </div>
@@ -521,7 +523,8 @@ E inicia sesión con tu email: ${familyUser.email}
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <main id="main-content" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <Link href="/help#administracion" className="help-link mb-5">Guía de esta pantalla →</Link>
         <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Page header */}
@@ -560,6 +563,7 @@ E inicia sesión con tu email: ${familyUser.email}
                     id="name"
                     type="text"
                     placeholder="Ej: María García"
+                    maxLength={80}
                     value={newUserName}
                     onChange={(e) => setNewUserName(e.target.value)}
                     disabled={actionLoading}
@@ -574,6 +578,7 @@ E inicia sesión con tu email: ${familyUser.email}
                     id="email"
                     type="email"
                     placeholder="Ej: maria@email.com"
+                    maxLength={254}
                     value={newUserEmail}
                     onChange={(e) => setNewUserEmail(e.target.value)}
                     disabled={actionLoading}
@@ -770,7 +775,8 @@ E inicia sesión con tu email: ${familyUser.email}
                 id="edit-name"
                 type="text"
                 placeholder="Ej: María García"
-                value={editName}
+                maxLength={80}
+                    value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 disabled={actionLoading}
                 required
@@ -786,7 +792,8 @@ E inicia sesión con tu email: ${familyUser.email}
                 id="edit-email"
                 type="email"
                 placeholder="Ej: maria@email.com"
-                value={editEmail}
+                maxLength={254}
+                    value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
                 disabled={actionLoading}
                 required

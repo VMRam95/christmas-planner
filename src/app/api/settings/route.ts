@@ -18,11 +18,13 @@ export async function GET() {
     const supabase = createServerClient()
 
     // Get user preferences, create default if not exists
-    let { data, error } = await supabase
+    const response = await supabase
       .from('user_preferences')
       .select('*')
       .eq('user_id', session.user.id)
       .single()
+    let data = response.data
+    const error = response.error
 
     if (error && error.code === 'PGRST116') {
       // No preferences found, create default
@@ -52,7 +54,7 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ success: true, data, email_delivery_available: process.env.EMAIL_DELIVERY_ENABLED === 'true' && !!process.env.EMAIL_SERVICE_API_KEY })
   } catch (error) {
     console.error('Error in settings GET:', error)
     return NextResponse.json(
@@ -73,7 +75,8 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { email_notifications_enabled } = body
 
     if (typeof email_notifications_enabled !== 'boolean') {

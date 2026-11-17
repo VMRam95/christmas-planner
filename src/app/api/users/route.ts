@@ -1,9 +1,11 @@
+import { getSession } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 // GET - Get all users (family members)
 export async function GET() {
   try {
+    if (!await getSession()) return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     const supabase = createServerClient()
 
     const { data, error } = await supabase

@@ -1,3 +1,4 @@
+import { isId } from '@/lib/validation'
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '20', 10)
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) return NextResponse.json({ success: false, error: 'Límite inválido' }, { status: 400 })
     const unreadOnly = searchParams.get('unread_only') === 'true'
 
     const supabase = createServerClient()
@@ -52,6 +54,7 @@ export async function GET(request: NextRequest) {
 
     if (countError) {
       console.error('Error counting unread notifications:', countError)
+      return NextResponse.json({ success: false, error: 'No se pudieron contar los avisos' }, { status: 500 })
     }
 
     return NextResponse.json({
@@ -81,12 +84,13 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { notification_ids, mark_all } = body
 
     const supabase = createServerClient()
 
-    if (mark_all) {
+    if (mark_all === true) {
       // Mark all user's notifications as read
       const { error } = await supabase
         .from('notifications')
@@ -101,7 +105,7 @@ export async function PUT(request: NextRequest) {
           { status: 500 }
         )
       }
-    } else if (notification_ids && Array.isArray(notification_ids)) {
+    } else if (Array.isArray(notification_ids) && notification_ids.length > 0 && notification_ids.length <= 100 && notification_ids.every(isId)) {
       // Mark specific notifications as read
       const { error } = await supabase
         .from('notifications')

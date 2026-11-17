@@ -65,7 +65,7 @@ function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-24 lg:bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-col gap-2">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
       ))}
@@ -96,7 +96,7 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border animate-slide-in-right min-w-[280px] max-w-[400px]',
+        'flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border animate-slide-in-right min-w-0 sm:min-w-[280px] max-w-[400px]',
         toastStyles[toast.type]
       )}
       role="alert"

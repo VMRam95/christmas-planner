@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: 'Christmas Planner',
   description: 'Organiza los regalos de Navidad en familia',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/icon.svg',
   },
 }
 

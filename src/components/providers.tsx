@@ -1,5 +1,6 @@
 'use client'
 
+import { AuthProvider } from '@/hooks/useAuth'
 import { ToastProvider } from '@/components/ui/toast'
 import type { ReactNode } from 'react'
 
@@ -8,5 +9,5 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
-  return <ToastProvider>{children}</ToastProvider>
+  return <ToastProvider><AuthProvider>{children}</AuthProvider></ToastProvider>
 }

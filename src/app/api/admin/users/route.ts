@@ -1,3 +1,4 @@
+import { isEmail, isId } from '@/lib/validation'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -63,11 +64,13 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServerClient()
-    const body = await request.json()
-    const { email, name } = body
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
+    const { name } = body
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : body.email
 
     // Validate input
-    if (!email || !name) {
+    if (!isEmail(email) || typeof name !== 'string' || !name.trim() || name.trim().length > 80) {
       return NextResponse.json(
         { success: false, error: 'Email y nombre son requeridos' },
         { status: 400 }
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
     // Insert new user
     const { data, error } = await supabase
       .from('users')
-      .insert([{ email, name }])
+      .insert([{ email, name: name.trim() }])
       .select()
       .single()
 
@@ -128,23 +131,27 @@ export async function PUT(request: NextRequest) {
     }
 
     const supabase = createServerClient()
-    const body = await request.json()
-    const { id, email, name, avatar_url } = body
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
+    const { id, name, avatar_url } = body
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : body.email
 
     // Validate input
-    if (!id) {
+    if (!isId(id)) {
       return NextResponse.json(
         { success: false, error: 'ID de usuario requerido' },
         { status: 400 }
       )
     }
 
-    if (!email || !name) {
+    if (!isEmail(email) || typeof name !== 'string' || !name.trim() || name.trim().length > 80) {
       return NextResponse.json(
         { success: false, error: 'Email y nombre son requeridos' },
         { status: 400 }
       )
     }
+
+    if (id === (await getSession())?.user.id && email !== ADMIN_EMAIL) return NextResponse.json({ success: false, error: 'El email del administrador no se puede cambiar desde esta pantalla' }, { status: 400 })
 
     // Check if email is already taken by another user
     const { data: existing } = await supabase
@@ -161,8 +168,9 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    if (avatar_url != null && (typeof avatar_url !== 'string' || !avatar_url.startsWith(process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1/object/public/christmas-avatars/'))) return NextResponse.json({ success: false, error: 'Foto inválida' }, { status: 400 })
     // Update user
-    const updateData: Record<string, any> = { email, name }
+    const updateData: Record<string, unknown> = { email, name: name.trim() }
     if (avatar_url !== undefined) {
       updateData.avatar_url = avatar_url
     }
@@ -210,12 +218,14 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
-    if (!id) {
+    if (!isId(id)) {
       return NextResponse.json(
         { success: false, error: 'ID de usuario requerido' },
         { status: 400 }
       )
     }
+
+    if (id === (await getSession())?.user.id) return NextResponse.json({ success: false, error: 'No puedes eliminar tu propia cuenta de administrador' }, { status: 400 })
 
     // Delete user
     const { error } = await supabase

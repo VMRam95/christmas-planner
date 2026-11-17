@@ -1,3 +1,4 @@
+import { isId } from '@/lib/validation'
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -30,13 +31,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: [] })
     }
 
+    if (wishIds.length > 100 || !wishIds.every(isId)) return NextResponse.json({ success: false, error: 'IDs inválidos' }, { status: 400 })
     const supabase = createServerClient()
+    const { data: visibleWishes, error: wishesError } = await supabase.from('wishes').select('id').in('id', wishIds).neq('user_id', session.user.id)
+    if (wishesError) return NextResponse.json({ success: false, error: 'No se pudo comprobar la privacidad' }, { status: 500 })
+    const visibleIds = visibleWishes?.map(w => w.id) || []
+    if (!visibleIds.length) return NextResponse.json({ success: true, data: [] })
 
     // Query assignments for the provided wish IDs (include assigned_by to detect external assignments)
     const { data, error } = await supabase
       .from('assignments')
       .select('wish_id, assigned_by')
-      .in('wish_id', wishIds)
+      .in('wish_id', visibleIds)
 
     if (error) {
       console.error('Error fetching wish assignments:', error)
@@ -46,7 +52,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({ success: true, data: data?.map(a => ({ wish_id: a.wish_id, assigned_by: a.assigned_by === session.user.id ? session.user.id : a.assigned_by === null ? null : 'reserved' })) })
   } catch (error) {
     console.error('Error in wishes/assignments GET:', error)
     return NextResponse.json(

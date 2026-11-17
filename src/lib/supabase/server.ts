@@ -1,23 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-// Use service role key if available, fallback to anon key
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY &&
-  process.env.SUPABASE_SERVICE_ROLE_KEY !== 'your-service-role-key-here'
-    ? process.env.SUPABASE_SERVICE_ROLE_KEY
-    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-/**
- * Supabase client for server-side operations
- * Use this in API routes and Server Components
- *
- * Uses the christmas_planner schema to isolate from other projects
- *
- * Note: If service role key is configured, this bypasses RLS
- */
+/** Data access is server-only and requires a verified session in every API. */
 export function createServerClient() {
-  return createClient(supabaseUrl, supabaseKey, {
-    db: { schema: 'christmas_planner' }
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!key || key === 'your-service-role-key-here') throw new Error('SUPABASE_SERVICE_ROLE_KEY is required')
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
+    db: { schema: 'christmas_planner' },
+    auth: { persistSession: false, autoRefreshToken: false },
   })
 }

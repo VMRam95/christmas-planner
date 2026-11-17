@@ -1,5 +1,4 @@
 import { supabase } from './client'
-import { createServerClient } from './server'
 
 import type { User, Wish, Assignment, SurpriseGift, WishWithAssignment } from '@/types'
 

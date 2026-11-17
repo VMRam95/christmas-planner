@@ -1,4 +1,5 @@
 'use client'
+import { useDialogFocus } from '@/hooks/useDialogFocus'
 
 import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
@@ -41,19 +42,7 @@ export function ConfirmModal({
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, loading, onClose])
 
-  // Focus trap and prevent scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      modalRef.current?.focus()
-    } else {
-      document.body.style.overflow = ''
-    }
-
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useDialogFocus(isOpen, modalRef)
 
   if (!isOpen) return null
 

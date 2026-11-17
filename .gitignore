@@ -52,3 +52,23 @@ next-env.d.ts
 # Misc
 *.pem
 .env*.local
+
+# Private local process journals and generated credentials
+artifacts/**/supabase.env
+artifacts/**/*-process.json
+artifacts/**/*-process.lock
+/supabase/.temp/
+/supabase/.branches/
+/test-results/
+/playwright-report/
+
+# Local-only validation stack and vault refresh receipts
+/artifacts/product-images-5830/stack/
+/vault/_refresh/
+
+# Keep full runtime receipts local; publish inspected synthetic screenshots and summaries.
+/artifacts/product-images-5830/*
+!/artifacts/product-images-5830/*.png
+!/artifacts/product-images-5830/validation-summary.json
+!/artifacts/product-images-5830/responsive-metrics.json
+/artifacts/renovacion/

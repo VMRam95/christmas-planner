@@ -23,6 +23,7 @@ export interface SendEmailResult {
  * Send an email using the email service
  */
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
+  if (process.env.EMAIL_DELIVERY_ENABLED !== 'true') return { success: false, error: 'Email delivery disabled' }
   if (!EMAIL_SERVICE_API_KEY) {
     console.warn('EMAIL_SERVICE_API_KEY not configured, skipping email')
     return { success: false, error: 'Email service not configured' }
@@ -31,6 +32,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   try {
     const response = await fetch(`${EMAIL_SERVICE_URL}/api/send`, {
       method: 'POST',
+      signal: AbortSignal.timeout(10000),
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': EMAIL_SERVICE_API_KEY,
@@ -69,31 +71,11 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 export async function sendEmailBatch(
   recipients: Array<{ email: string; data: Record<string, unknown> }>,
   template: string
-): Promise<{ success: boolean; sent: number; failed: number; errors: string[] }> {
-  const result = { success: true, sent: 0, failed: 0, errors: [] as string[] }
-
-  const promises = recipients.map(async (recipient) => {
-    const res = await sendEmail({
-      to: recipient.email,
-      template,
-      data: recipient.data,
-    })
-
-    if (res.success) {
-      result.sent++
-    } else {
-      result.failed++
-      result.errors.push(`${recipient.email}: ${res.error}`)
-    }
-  })
-
-  await Promise.all(promises)
-
-  if (result.failed > 0 && result.sent === 0) {
-    result.success = false
-  }
-
-  return result
+): Promise<{ success: boolean; sent: number; failed: number; errors: string[]; sentTo: string[] }> {
+  const outcomes = await Promise.all(recipients.map(async recipient => ({ email: recipient.email, ...await sendEmail({ to: recipient.email, template, data: recipient.data }) })))
+  const sentTo = outcomes.filter(r => r.success).map(r => r.email)
+  const errors = outcomes.filter(r => !r.success).map(r => `${r.email}: ${r.error}`)
+  return { success: errors.length === 0, sent: sentTo.length, failed: errors.length, errors, sentTo }
 }
 
 /**

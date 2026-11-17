@@ -1,3 +1,4 @@
+import { giftError, isId } from '@/lib/validation'
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { createServerClient } from '@/lib/supabase/server'
@@ -101,10 +102,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
     const { recipient_id, title, description, url } = body
+    const validationError = giftError(body)
+    if (validationError) return NextResponse.json({ success: false, error: validationError }, { status: 400 })
 
-    if (!recipient_id) {
+    if (!isId(recipient_id)) {
       return NextResponse.json(
         { success: false, error: 'recipient_id es requerido' },
         { status: 400 }
@@ -199,7 +203,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
-    if (!id) {
+    if (!isId(id)) {
       return NextResponse.json(
         { success: false, error: 'ID es requerido' },
         { status: 400 }

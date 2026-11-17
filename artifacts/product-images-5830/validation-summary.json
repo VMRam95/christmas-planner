@@ -1,0 +1,79 @@
+{
+  "task": 5830,
+  "source_commit": "b07cf1d",
+  "environment": "isolated local Next.js + Supabase christmas-planner-images-5830 + Mailpit",
+  "checks": {
+    "unit": {
+      "expected": 13,
+      "status": "passed",
+      "exit_code": 0
+    },
+    "database": {
+      "expected": 4,
+      "status": "passed",
+      "exit_code": 0
+    },
+    "types": {
+      "status": "passed",
+      "exit_code": 0
+    },
+    "lint": {
+      "status": "passed",
+      "exit_code": 0,
+      "preexisting_warnings": 3
+    },
+    "e2e": {
+      "expected": 14,
+      "passed": 14,
+      "skipped": 0,
+      "exit_code": 0,
+      "duration_seconds": 53.7,
+      "status": "passed"
+    },
+    "build": {
+      "status": "passed",
+      "exit_code": 0
+    }
+  },
+  "limits": [
+    "Chromium headless and viewport/touch emulation only; no physical phone or screen reader certification.",
+    "Local timings are laboratory checks, not field Core Web Vitals.",
+    "External extraction depends on metadata and store access."
+  ],
+  "failures_preserved": [
+    "e2e-first-failure.log",
+    "e2e-first-failure.json",
+    "e2e-toast-failure.log",
+    "e2e-toast-failure.json"
+  ],
+  "screenshots_inspected": [
+    "wishes-1440.png",
+    "wishes-390.png",
+    "family-390.png",
+    "image-loading.png",
+    "image-unavailable.png"
+  ],
+  "responsive_timings_ms": {
+    "320": 70,
+    "390": 29,
+    "768": 45,
+    "1024": 30,
+    "1440": 29
+  },
+  "cleanup": {
+    "status": "verified",
+    "own_processes_released": 2,
+    "own_containers_removed": 6,
+    "browser": "closed",
+    "synthetic_data": "retained",
+    "cache_freed_kib_final_generation": 552684,
+    "prior_cleanup_freed_kib": 1182728,
+    "worktree": "retained; CAS lock untouched"
+  },
+  "real_store": "Amazon ES: original short product link, retrieved with a read-only URL query and not published",
+  "real_image": {
+    "type": "image/jpeg",
+    "bytes": 53717,
+    "host": "m.media-amazon.com"
+  }
+}

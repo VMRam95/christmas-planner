@@ -1,7 +1,8 @@
 'use client'
+import { useDialogFocus } from '@/hooks/useDialogFocus'
+import { giftError } from '@/lib/validation'
 
 import { useState, useEffect, useRef } from 'react'
-import { cn } from '@/lib/utils'
 import { Button } from './button'
 
 import type { User } from '@/types'
@@ -57,23 +58,13 @@ export function CreateGiftModal({
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, loading, onClose])
 
-  // Focus trap and prevent scroll
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      modalRef.current?.focus()
-    } else {
-      document.body.style.overflow = ''
-    }
-
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
+  useDialogFocus(isOpen, modalRef)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    const validationError = giftError(formData)
+    if (validationError) { setError(validationError); return }
 
     if (!formData.title.trim()) {
       setError('El título es requerido')
@@ -170,6 +161,7 @@ export function CreateGiftModal({
               <input
                 id="gift-title"
                 type="text"
+                maxLength={120}
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -191,6 +183,7 @@ export function CreateGiftModal({
               </label>
               <textarea
                 id="gift-description"
+                maxLength={2000}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -213,6 +206,7 @@ export function CreateGiftModal({
               <input
                 id="gift-url"
                 type="url"
+                maxLength={2048}
                 value={formData.url}
                 onChange={(e) =>
                   setFormData({ ...formData, url: e.target.value })

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
 
-    if (!file) {
+    if (!(file instanceof File) || !file.size) {
       return NextResponse.json(
         { success: false, error: 'No se proporcionó archivo' },
         { status: 400 }
@@ -58,13 +58,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique filename
-    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
+    const fileExt = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' } as Record<string, string>)[file.type]
+    const fileName = `${session.user.id}/${crypto.randomUUID()}.${fileExt}`
 
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
+    const validImage = file.type === 'image/png' ? buffer.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))
+      : file.type === 'image/jpeg' ? buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255
+      : file.type === 'image/gif' ? ['GIF87a', 'GIF89a'].includes(buffer.subarray(0, 6).toString())
+      : buffer.subarray(0, 4).toString() === 'RIFF' && buffer.subarray(8, 12).toString() === 'WEBP'
+    if (!validImage) return NextResponse.json({ success: false, error: 'El archivo no corresponde al formato de imagen indicado' }, { status: 400 })
     const supabase = createStorageClient()
 
     // Upload to Supabase Storage
@@ -122,17 +127,18 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Extract filename from URL
-    const fileName = url.split('/').pop()
-    if (!fileName) {
-      return NextResponse.json(
-        { success: false, error: 'URL inválida' },
-        { status: 400 }
-      )
-    }
+    if (url !== session.user.avatar_url) return NextResponse.json({ success: false, error: 'No puedes eliminar una foto ajena' }, { status: 403 })
+    const prefix = process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_NAME + '/'
+    if (!url.startsWith(prefix)) return NextResponse.json({ success: false, error: 'URL inválida' }, { status: 400 })
+    const fileName = url.slice(prefix.length)
+    if (!fileName || fileName.includes('..') || fileName.includes('?')) return NextResponse.json({ success: false, error: 'URL inválida' }, { status: 400 })
 
     const supabase = createStorageClient()
 
+    const { count, error: referencesError } = await supabase.schema('christmas_planner').from('users').select('id', { count: 'exact', head: true }).eq('avatar_url', url).neq('id', session.user.id)
+    if (referencesError) return NextResponse.json({ success: false, error: 'No se pudo comprobar el uso de la foto' }, { status: 500 })
+    // A legacy/shared image must survive while another family profile references it.
+    if (count) return NextResponse.json({ success: true, data: { retained: true } })
     const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .remove([fileName])

@@ -48,17 +48,18 @@ export async function GET() {
 // POST - Login with email
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { email } = body
+    const body = await request.json().catch(() => null)
+    if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ success: false, error: 'Datos inválidos' }, { status: 400 })
+    const { email, password } = body
 
-    if (!email || typeof email !== 'string') {
+    if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || email.length > 254 || typeof password !== 'string' || !password || password.length > 128) {
       return NextResponse.json(
-        { success: false, error: 'Email es requerido' },
+        { success: false, error: 'Introduce un email válido y tu contraseña' },
         { status: 400 }
       )
     }
 
-    const result = await validateAndCreateSession(email)
+    const result = await validateAndCreateSession(email, password)
 
     if (result.success) {
       return NextResponse.json({

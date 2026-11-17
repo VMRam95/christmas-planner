@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -69,12 +70,13 @@ export default function MyWishesPage() {
       if (result.success) {
         setWishes((prev) => [result.data, ...prev])
         showToast('Deseo añadido a tu carta', 'success')
+        if (result.notification_warning) showToast(result.notification_warning, 'warning')
       } else {
-        showToast(result.error || 'Error al crear el deseo', 'error')
+        throw new Error(result.error || 'Error al crear el deseo')
       }
     } catch (error) {
       console.error('Error creating wish:', error)
-      showToast('Error al crear el deseo', 'error')
+      throw error
     } finally {
       setActionLoading(false)
     }
@@ -98,11 +100,11 @@ export default function MyWishesPage() {
         setEditingWish(null)
         showToast('Deseo actualizado correctamente', 'success')
       } else {
-        showToast(result.error || 'Error al actualizar el deseo', 'error')
+        throw new Error(result.error || 'Error al actualizar el deseo')
       }
     } catch (error) {
       console.error('Error updating wish:', error)
-      showToast('Error al actualizar el deseo', 'error')
+      throw error
     } finally {
       setActionLoading(false)
     }
@@ -164,7 +166,8 @@ export default function MyWishesPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+      <main id="main-content" className="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+        <Link href="/help#carta" className="help-link mb-5">Guía de esta pantalla →</Link>
         <BackLink href="/dashboard" label="Volver al dashboard" className="mb-4 sm:mb-6" />
 
         {/* Page header */}
