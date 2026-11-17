@@ -1,0 +1,8 @@
+*
+!.gitignore
+!*.png
+!validation-summary.json
+!cloud-baseline-joyroom.json
+!cloud-baseline-creative.json
+!cloud-fixed-joyroom.json
+!cloud-fixed-creative.json

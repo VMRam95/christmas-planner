@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "type": "image/jpeg",
+  "bytes": 53717,
+  "trace": [
+    {
+      "host": "amzn.eu",
+      "status": 301,
+      "type": "application/json",
+      "bytes": "2"
+    },
+    {
+      "host": "www.amazon.es",
+      "status": 200,
+      "type": "text/html;charset=UTF-8"
+    },
+    {
+      "host": "m.media-amazon.com",
+      "status": 200,
+      "type": "image/jpeg",
+      "bytes": "53717"
+    }
+  ],
+  "ms": 1182,
+  "node": "v24.22.3",
+  "region": "iad1",
+  "dns": [
+    {
+      "address": "3.253.181.71",
+      "family": 4
+    },
+    {
+      "address": "3.253.167.158",
+      "family": 4
+    },
+    {
+      "address": "3.253.178.18",
+      "family": 4
+    }
+  ]
+}

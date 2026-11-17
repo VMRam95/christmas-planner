@@ -1,0 +1,1 @@
+{"success":false,"error":"Unsupported response","trace":[{"host":"amzn.eu","status":301,"type":"application/json","bytes":"2"},{"host":"www.amazon.es","status":503,"type":"text/html","bytes":"1997"}],"ms":372,"node":"v24.22.3","region":"iad1","dns":[{"address":"3.253.181.71","family":4},{"address":"3.253.178.18","family":4},{"address":"3.253.167.158","family":4}]}

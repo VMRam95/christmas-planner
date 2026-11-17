@@ -16,7 +16,7 @@ export function ProductImage({ url, title }: { url: string; title: string }) {
         // The authenticated endpoint validates and proxies external images without exposing the visitor.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/api/product-image?url=${encodeURIComponent(url)}`}
+          src={`/api/product-image?url=${encodeURIComponent(url)}&v=2`}
           alt={title}
           width={112}
           height={112}

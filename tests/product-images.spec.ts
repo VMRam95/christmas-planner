@@ -17,10 +17,49 @@ async function wishCard(page: Page, name: string) {
 }
 
 test('image endpoint requires login and rejects private destinations', async ({ request }) => {
-  expect((await request.get('/api/product-image?url=' + encodeURIComponent(product))).status()).toBe(401)
+  const anonymous = await request.get('/api/product-image?url=' + encodeURIComponent(product))
+  expect(anonymous.status()).toBe(401)
+  expect(anonymous.headers()['cache-control']).toBe('no-store')
   expect((await request.post('/api/auth', { data: { email: 'alice@example.test', password } })).status()).toBe(200)
   for (const url of ['http://127.0.0.1/', 'http://169.254.169.254/', 'file:///etc/passwd']) {
-    expect((await request.get('/api/product-image?url=' + encodeURIComponent(url))).status()).toBe(400)
+    const invalid = await request.get('/api/product-image?url=' + encodeURIComponent(url))
+    expect(invalid.status()).toBe(400)
+    expect(invalid.headers()['cache-control']).toBe('no-store')
+  }
+  const missing = await request.get('/api/product-image?url=' + encodeURIComponent('https://example.com/'))
+  expect(missing.status()).toBe(404)
+  expect(missing.headers()['cache-control']).toBe('no-store')
+})
+
+test('both reported Amazon products load and bypass previously cached failure URLs', async ({ page }) => {
+  await login(page)
+  const products = [
+    { title: 'JOYROOM PODIX Estación carga GaN 140W', url: 'https://www.amazon.es/dp/B0G3N54XSC' },
+    { title: 'CREATIVE Pebble Pro 2.0 Altavoces USB-C', url: 'https://www.amazon.es/gp/product/B0DXW25R3D' },
+  ]
+  const ids: string[] = []
+  try {
+    for (const item of products) {
+      const response = await page.request.post('/api/wishes', { data: { ...item, description: 'Prueba de imagen de Amazon', priority: 2 } })
+      expect(response.status()).toBe(200)
+      ids.push((await response.json()).data.id)
+    }
+    await page.goto('/my-wishes')
+    for (const item of products) {
+      const card = await wishCard(page, item.title)
+      await card.scrollIntoViewIfNeeded()
+      const image = card.getByRole('img', { name: item.title, exact: true })
+      await expect(image).toHaveAttribute('src', /&v=2$/)
+      await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 20000 }).toBeGreaterThan(16)
+    }
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 })
+      await (await wishCard(page, products[0].title)).scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.screenshot({ path: `artifacts/amazon-images-5841/amazon-wishes-${width}.png` })
+    }
+  } finally {
+    for (const id of ids) await page.request.delete('/api/wishes?id=' + id)
   }
 })
 
