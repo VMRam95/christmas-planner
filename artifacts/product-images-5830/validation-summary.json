@@ -1,6 +1,6 @@
 {
   "task": 5830,
-  "source_commit": "4a2869b",
+  "source_commit": "b07cf1d",
   "environment": "isolated local Next.js + Supabase christmas-planner-images-5830 + Mailpit",
   "checks": {
     "unit": {
@@ -27,7 +27,7 @@
       "passed": 14,
       "skipped": 0,
       "exit_code": 0,
-      "duration_seconds": 42.9,
+      "duration_seconds": 53.7,
       "status": "passed"
     },
     "build": {
@@ -54,19 +54,26 @@
     "image-unavailable.png"
   ],
   "responsive_timings_ms": {
-    "320": 56,
-    "390": 47,
-    "768": 37,
+    "320": 70,
+    "390": 29,
+    "768": 45,
     "1024": 30,
-    "1440": 31
+    "1440": 29
   },
   "cleanup": {
     "status": "verified",
-    "freed_kib": 1182728,
-    "own_containers_removed": 6,
     "own_processes_released": 2,
+    "own_containers_removed": 6,
     "browser": "closed",
     "synthetic_data": "retained",
+    "cache_freed_kib_final_generation": 552684,
+    "prior_cleanup_freed_kib": 1182728,
     "worktree": "retained; CAS lock untouched"
+  },
+  "real_store": "Amazon ES: original short product link, retrieved with a read-only URL query and not published",
+  "real_image": {
+    "type": "image/jpeg",
+    "bytes": 53717,
+    "host": "m.media-amazon.com"
   }
 }

@@ -47,9 +47,9 @@ La prueba inicial con la página oficial Creative Pebble Pro obtuvo un JPEG de
 y las cinco unitarias históricas también. Types y lint sobre la renovación
 con imágenes pasan; lint conserva tres avisos previos de imágenes de avatar/admin.
 
-Versión de producto validada: `4a2869b`. Resultado final: **13 unitarios, 4 DB,
+Versión de producto validada: `b07cf1d`. Resultado final: **13 unitarios, 4 DB,
 14 E2E, cero skips**, types, lint y build con exit 0. Lint mantiene tres avisos
-previos. La batería E2E completa tarda 42,9 segundos. Capturas de escritorio, móvil,
+previos. La batería E2E completa tarda 53,7 segundos. Capturas de escritorio, móvil,
 carta familiar, carga retenida y fallo abiertas e inspeccionadas. Informe completo:
 `artifacts/product-images-5830/validation-summary.json`; logs y JSON de las
 ejecuciones fallidas también se conservan.
@@ -60,7 +60,15 @@ redirecciones relativas y prueba que se conserva el origen. También elimina una
 carrera de la prueba que cerraba avisos con índices después de su caducidad.
 Los dos primeros resultados E2E (12/14 y 13/14) quedan registrados, sin ocultarlos.
 
-Validación y limpieza verificadas. Falta registrar URL de PR; no se ha publicado producción.
+PR [#1](https://github.com/VMRam95/christmas-planner/pull/1) abierta contra main.
+No se ha publicado producción. Una comprobación adicional del enlace corto de
+Amazon del deseo real detectó HTML mayor de 2 MiB. La revisión `b07cf1d` analiza
+solo el prefijo acotado y cierra la descarga, conservando el límite y el rechazo de
+imágenes grandes. La extracción del enlace real devuelve un JPEG de 53.717 bytes.
+La URL del deseo se consultó en una transacción de solo lectura; ningún dato remoto
+se modificó. La batería completa se repitió con ese mismo enlace: 14/14 E2E, cero skips,
+13 unitarios y 4 DB; types, lint y build exit 0. Las cinco capturas finales
+muestran esa imagen real de Amazon y se han abierto e inspeccionado.
 
 | Criterio | Consumidor / condiciones | Estado |
 | --- | --- | --- |
@@ -78,7 +86,7 @@ histórico por parecido. Puertos locales 9000, 56491/56492/56494/56496; configur
 privada del stack bajo `artifacts/product-images-5830/stack/`, ignorada por Git.
 Conserva volúmenes sintéticos y cierra contenedores por IDs y generación verificados.
 
-Medición local: redimensionado y comprobación de la tarjeta entre 30 y 56 ms;
+Medición local: redimensionado y comprobación de la tarjeta entre 29 y 70 ms;
 no representa INP ni métricas de campo. La caja del producto mantiene posición y
 tamaño antes/después del fallo. Emulación Chromium con tacto y teclado; sin móvil
 físico, teclado virtual real, ni certificación de lector de pantalla/accesibilidad.
@@ -101,3 +109,8 @@ Cachés propias comprobadas sin referencias activas y retiradas: node_modules
 1.182.728 KiB, aproximadamente 1,13 GiB. Worktree CAS conservado sin tocar su lock.
 El registro completo permanece en local-resources.json; no hay servicios ni
 reservas de esta tarea pendientes de cierre.
+
+La segunda generación, usada para la regresión con el enlace original de Amazon,
+también se cerró verificando sus nuevos IDs y journals. El recibo final, el resumen
+y las capturas corresponden a `b07cf1d`; no quedan pruebas de producto pendientes
+del agente. Revisión del usuario y merge/despliegue permanecen pendientes.
